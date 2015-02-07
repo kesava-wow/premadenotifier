@@ -1,3 +1,9 @@
+--[[
+    PremadeNotifier
+    Kesava-Auchindoun
+    All rights reserved.
+]]
+-- /run local f=PremadeNotifierFrame; f:SetContinuous(); f:RefreshSearch()
 local folder,ns = ...
 local addon = CreateFrame('frame','PremadeNotifierFrame')
 local elap = 0
@@ -59,6 +65,7 @@ end
 
 function addon:LFG_LIST_SEARCH_FAILED()
     -- silently fail and try again
+    waiting_for_results = nil
     self:DelayedRefresh()
 end
 function addon:LFG_LIST_SEARCH_RESULTS_RECEIVED()
