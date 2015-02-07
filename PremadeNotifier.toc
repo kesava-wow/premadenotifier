@@ -1,0 +1,6 @@
+## Interface: 60000
+## Author: Kesava
+## Title: Premade|cff9966ffNotifier|r
+## Notes: It notifies you. About premades.
+
+main.lua
