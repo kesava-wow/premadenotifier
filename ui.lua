@@ -57,12 +57,17 @@ local function ButtonOnMouseUp(button)
 end
 
 local function ButtonOnClick(button, mouse_button)
+    --                          refreshbtn  searchpanel lfglistfrm  pve/pvpstub
+    local active_panel = button:GetParent():GetParent():GetParent():GetParent():GetName()
+
     if mouse_button == 'LeftButton' then
+        -- Don't worry about the active panel here, as the PVEFrame contains
+        -- all of them anyway
         HideUIPanel(PVEFrame)
     end
 
     local req_members = IsShiftKeyDown() and 10 or IsControlKeyDown() and 2 or nil
-    addon:StartNewSearch(req_members)
+    addon:StartNewSearch(req_members, active_panel)
 end
 
 local function ButtonTooltip(button)
@@ -71,7 +76,7 @@ local function ButtonTooltip(button)
     
     GameTooltip:AddLine('Continuous search')
     GameTooltip:AddLine(
-        'Continuously search for this filter in the background and open the search results when an event is found.\n\nRight click to search without closing the UI.',
+        'Continuously search for this filter in the background and open the search results when an event is found.\n\nRight click to search without closing the UI.\nCtrl-click to search with a minimum member requirement of 2.\nShift-click to search with a minimum member requirement of 10.',
         1,1,1,true)
 
     GameTooltip:Show()
@@ -79,6 +84,8 @@ end
 local function ButtonTooltipHide(button)
     GameTooltip:Hide()
 end
+
+button:RegisterForClicks('LeftButtonUp','RightButtonUp')
 
 button:SetScript('OnClick', ButtonOnClick)
 button:SetScript('OnEnter', ButtonTooltip)

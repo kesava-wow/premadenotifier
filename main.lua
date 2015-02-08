@@ -79,12 +79,13 @@ function addon:ToggleIgnore(resultID,menu)
     menu.pn_modified = true
 end
 
-function addon:StartNewSearch(req_members)
+function addon:StartNewSearch(req_members, active_panel)
     -- grab category & filter at time of search
     addon.categoryID = SearchPanel.categoryID
     addon.searchText = SearchPanel.SearchBox:GetText()
     addon.filters = SearchPanel.filters
     addon.preferredFilters = SearchPanel.preferredFilters
+    addon.active_panel = active_panel
     addon.req_members = req_members
 
     self:DelayedRefresh()
@@ -197,27 +198,38 @@ function addon:LFG_LIST_SEARCH_RESULTS_RECEIVED()
         for _,id in ipairs(results) do
             local _,_,name,_,_,ilvl,_,_,_,_,_,author,members = C_LFGList.GetSearchResultInfo(id)
 
-            if  -- always ignore certain results-
-                (addon.req_members and members < addon.req_members) or
-                self:IsIgnored(id) or
-                player_ilvl < ilvl or
-                members == 40
-            then
-                no_results = no_results - 1
-            else
-                select_result = id
-                d_print('Result '..id..': '..name..' by '..author..' ['..members..']')
-                break
+            if name and author then
+                if  -- always ignore certain results-
+                    (addon.req_members and members < addon.req_members) or
+                    self:IsIgnored(id) or
+                    player_ilvl < ilvl or
+                    members == 40
+                then
+                    no_results = no_results - 1
+                else
+                    select_result = id
+                    d_print('Result '..id..': '..name..' by '..author..' ['..members..']')
+                    break
+                end
             end
         end
 
         if select_result and no_results >= 1 then
             addon:StopSearch()
 
-            -- open the frame and select the first matched result
-            PVEFrame_ShowFrame('GroupFinderFrame')
-            GroupFinderFrameGroupButton4:Click()
+            -- open frame to panel which was active at time of search
+            if self.active_panel == 'LFGListPVEStub' then
+                PVEFrame_TabOnClick(PVEFrameTab1) -- pve
+                GroupFinderFrameGroupButton4:Click()
+            else
+                PVEFrame_TabOnClick(PVEFrameTab2) -- pvp
+                PVPQueueFrameCategoryButton4:Click()
+            end
+
+            -- jump to the search panel (which was updated by the search itself)
             LFGListFrame_SetActivePanel(LFGListFrame,SearchPanel)
+
+            -- select the matched result
             LFGListSearchPanel_SelectResult(SearchPanel, select_result)
 
             return
