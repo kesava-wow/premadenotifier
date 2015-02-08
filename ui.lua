@@ -17,6 +17,6 @@ button.icon:SetAllPoints(button)
 
 button:EnableMouse(true)
 button:SetScript('OnClick', function()
-    addon:SetContinuous()
-    addon:RefreshSearch()
+    HideUIPanel(PVEFrame)
+    addon:StartNewSearch()
 end)
