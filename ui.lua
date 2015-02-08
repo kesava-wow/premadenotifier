@@ -33,7 +33,8 @@ local function ButtonOnClick(button, mouse_button)
         HideUIPanel(PVEFrame)
     end
 
-    addon:StartNewSearch()
+    local req_members = IsShiftKeyDown() and 10 or IsControlKeyDown() and 2 or nil
+    addon:StartNewSearch(req_members)
 end
 
 local function ButtonTooltip(button)

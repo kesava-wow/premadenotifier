@@ -53,12 +53,13 @@ do
     LFGListFrame.SearchPanel:HookScript('OnShow', DefaultPanelOnShow)
 end
 
-function addon:StartNewSearch()
+function addon:StartNewSearch(req_members)
     -- grab category & filter at time of search
     addon.categoryID = SearchPanel.categoryID
     addon.searchText = SearchPanel.SearchBox:GetText()
     addon.filters = SearchPanel.filters
     addon.preferredFilters = SearchPanel.preferredFilters
+    addon.req_members = req_members
 
     self:DelayedRefresh()
 end
@@ -170,7 +171,11 @@ function addon:LFG_LIST_SEARCH_RESULTS_RECEIVED()
         for _,id in ipairs(results) do
             local _,_,name,_,_,ilvl,_,_,_,_,_,author,members = C_LFGList.GetSearchResultInfo(id)
 
-            if player_ilvl < ilvl or members == 40 then
+            if  -- always ignore certain results-
+                (addon.req_members and members < addon.req_members) or
+                player_ilvl < ilvl or
+                members == 40
+            then
                 no_results = no_results - 1
             else
                 select_result = id
