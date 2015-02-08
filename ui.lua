@@ -53,6 +53,7 @@ button.icon = button:CreateTexture(nil, 'ARTWORK', nil, 5)
 button.icon:SetTexture('Interface\\Buttons\\UI-RefreshButton')
 button.icon:SetPoint('CENTER', -1, 0)
 button.icon:SetSize(16,16)
+button.icon:SetVertexColor(.3,1,.2)
 
 -- script handlers --
 local function ButtonOnMouseDown(button)
@@ -60,20 +61,6 @@ local function ButtonOnMouseDown(button)
 end
 local function ButtonOnMouseUp(button)
     button.icon:SetPoint('CENTER', button, 'CENTER', -1, 0)
-end
-
-local function ButtonOnClick(button, mouse_button)
-    --                          refreshbtn  searchpanel lfglistfrm  pve/pvpstub
-    local active_panel = button:GetParent():GetParent():GetParent():GetParent():GetName()
-
-    if mouse_button == 'LeftButton' then
-        -- Don't worry about the active panel here, as the PVEFrame contains
-        -- all of them anyway
-        HideUIPanel(PVEFrame)
-    end
-
-    local req_members = IsShiftKeyDown() and 10 or IsControlKeyDown() and 2 or nil
-    addon:StartNewSearch(req_members, active_panel)
 end
 
 local function ButtonTooltip(button)
@@ -84,6 +71,7 @@ local function ButtonTooltip(button)
         GameTooltip:AddLine(tooltip_default_title)
         GameTooltip:AddLine(tooltip_default_text,1,1,1,true)
     else
+        -- add search information to the tooltip
         GameTooltip:AddLine(tooltip_search_title)
 
         if addon.searchText and addon.searchText ~= '' then
@@ -106,6 +94,30 @@ local function ButtonTooltip(button)
 end
 local function ButtonTooltipHide(button)
     GameTooltip:Hide()
+end
+
+local function ButtonOnClick(button, mouse_button)
+    if addon.searching then
+        -- stop the current search
+        addon:StopSearch()
+        ButtonTooltip(button)
+        return
+    end
+
+    --                          refreshbtn  searchpanel lfglistfrm  pve/pvpstub
+    local active_panel = button:GetParent():GetParent():GetParent():GetParent():GetName()
+
+    local req_members = IsShiftKeyDown() and 10 or IsControlKeyDown() and 2 or nil
+    addon:StartNewSearch(req_members, active_panel)
+
+    if mouse_button == 'LeftButton' then
+        -- Don't worry about the active panel here, as the PVEFrame contains
+        -- all of them anyway
+        HideUIPanel(PVEFrame)
+    else
+        -- immediately update the tooltip
+        ButtonTooltip(button)
+    end
 end
 
 button:RegisterForClicks('LeftButtonUp','RightButtonUp')
