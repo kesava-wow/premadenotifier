@@ -25,6 +25,34 @@ local function GetGroupTable(i)
     return _G['LFGListSearchPanelScrollFrameButton'..i]
 end
 
+-- Prevent manually browsing the UI from interfering with an active search
+local DisableDefaultButtons,EnableDefaultButtons
+do
+    local do_disable
+
+    DisableDefaultButtons = function()
+        do_disable = true
+        LFGListFrame.CategorySelection.FindGroupButton:Disable()
+        SearchPanel.RefreshButton:Disable()
+    end
+
+    EnableDefaultButtons = function()
+        do_disable = nil
+        LFGListFrame.CategorySelection.FindGroupButton:Enable()
+        SearchPanel.RefreshButton:Enable()
+    end
+
+    local DefaultPanelOnShow = function()
+        if do_disable then
+            DisableDefaultButtons()
+        end
+    end
+
+    hooksecurefunc('LFGListCategorySelection_UpdateNavButtons', DefaultPanelOnShow)
+    LFGListFrame.CategorySelection:HookScript('OnShow', DefaultPanelOnShow)
+    LFGListFrame.SearchPanel:HookScript('OnShow', DefaultPanelOnShow)
+end
+
 function addon:StartNewSearch()
     -- grab category & filter at time of search
     addon.categoryID = SearchPanel.categoryID
@@ -54,8 +82,7 @@ function addon:DoSearch()
     end
 
     -- disable buttons which can interfere at this point
-    LFGListFrame.CategorySelection.FindGroupButton:Disable()
-    SearchPanel.RefreshButton:Disable()
+    DisableDefaultButtons()
 
     C_LFGList.Search(self.categoryID, self.searchText, self.filters, self.preferredFilters)
 
@@ -78,8 +105,7 @@ function addon:StopWaitingForResults()
     addon:UnregisterEvent('LFG_LIST_SEARCH_FAILED')
     addon:UnregisterEvent('LFG_LIST_SEARCH_RESULTS_RECEIVED')
 
-    LFGListFrame.CategorySelection.FindGroupButton:Enable()
-    SearchPanel.RefreshButton:Enable()
+    EnableDefaultButtons()
 
     d_print('no longer waiting for results')
 end
@@ -159,6 +185,7 @@ function addon:LFG_LIST_SEARCH_RESULTS_RECEIVED()
             -- open the frame and select the first matched result
             PVEFrame_ShowFrame('GroupFinderFrame')
             GroupFinderFrameGroupButton4:Click()
+            LFGListFrame_SetActivePanel(LFGListFrame,SearchPanel)
             LFGListSearchPanel_SelectResult(SearchPanel, select_result)
 
             return
