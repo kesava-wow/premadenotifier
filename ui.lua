@@ -20,7 +20,7 @@ hooksecurefunc('EasyMenu', function(menu,frame,anchor,x,y,display)
             text='Ignore',
             tooltipOnButton=true,
             tooltipTitle='Ignore',
-            tooltipText="Don't alert about this event when continuously searching."
+            tooltipText="Don't notify about this event when continuously searching."
         })
     elseif menu.pn_modified == resultID then
         -- stop iterating if the menu was already modified for this entry

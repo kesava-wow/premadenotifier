@@ -87,9 +87,6 @@ function addon:StartNewSearch(req_members)
     addon.preferredFilters = SearchPanel.preferredFilters
     addon.req_members = req_members
 
-    -- reset ignored events obviously
-    wipe(ignored_events)
-
     self:DelayedRefresh()
 end
 
