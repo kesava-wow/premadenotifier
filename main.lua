@@ -88,6 +88,8 @@ function addon:StartNewSearch(req_members, active_panel)
     addon.active_panel = active_panel
     addon.req_members = req_members
 
+    addon.searching = true
+
     self:DelayedRefresh()
 end
 
@@ -141,6 +143,8 @@ end
 function addon:StopSearch()
     -- stop search and clean up events, scripts
     search_again_at = nil
+    addon.searching = nil
+    
     self:StopWaitingForResults()
     self:SetScript('OnUpdate',nil)
 

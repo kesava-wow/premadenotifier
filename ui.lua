@@ -5,6 +5,12 @@
 ]]
 local addon = PremadeNotifierFrame
 
+local tooltip_default_title = 'Continuous search'
+local tooltip_default_text = 'Continuously search for this filter in the background and open the search results when an event is found.\n\nRight click to search without closing the UI.\nCtrl-click to search with a minimum member requirement of 2.\nShift-click to search with a minimum member requirement of 10.'
+
+local tooltip_search_title = 'Searching...'
+local tooltip_search_text = '\nClick again to cancel.'
+
 local button = CreateFrame('Button','PremadeNotifierButton',LFGListFrame.SearchPanel.RefreshButton)
 button:SetPoint('RIGHT', LFGListFrame.SearchPanel.RefreshButton, 'LEFT', 0, 0)
 
@@ -74,10 +80,27 @@ local function ButtonTooltip(button)
     GameTooltip:SetOwner(button, 'ANCHOR_RIGHT')
     GameTooltip:SetWidth(200)
     
-    GameTooltip:AddLine('Continuous search')
-    GameTooltip:AddLine(
-        'Continuously search for this filter in the background and open the search results when an event is found.\n\nRight click to search without closing the UI.\nCtrl-click to search with a minimum member requirement of 2.\nShift-click to search with a minimum member requirement of 10.',
-        1,1,1,true)
+    if not addon.searching then
+        GameTooltip:AddLine(tooltip_default_title)
+        GameTooltip:AddLine(tooltip_default_text,1,1,1,true)
+    else
+        GameTooltip:AddLine(tooltip_search_title)
+
+        if addon.searchText and addon.searchText ~= '' then
+            GameTooltip:AddDoubleLine('Search text:', addon.searchText, 1,.82,0, 1,1,1)
+        end
+
+        if addon.categoryID then
+            local category_name = C_LFGList.GetCategoryInfo(addon.categoryID)
+            GameTooltip:AddDoubleLine('Category:', category_name, 1,.82,0, 1,1,1)
+        end
+
+        if addon.req_members and addon.req_members > 1 then
+            GameTooltip:AddDoubleLine('Members:', addon.req_members, 1,.82,0, 1,1,1)
+        end
+
+        GameTooltip:AddLine(tooltip_search_text,1,1,1)
+    end
 
     GameTooltip:Show()
 end
