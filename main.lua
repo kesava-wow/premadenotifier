@@ -16,6 +16,8 @@ local CONTINUOUS_SEARCH_INTERVAL = 10
 local UPDATE_INTERVAL = .1
 local DEBUG = true
 
+local ignored_events = {}
+
 -- functions --
 local function d_print(m)
     if DEBUG then print('Premade|cff9966ffNotifier|r: '..m) end
@@ -53,6 +55,30 @@ do
     LFGListFrame.SearchPanel:HookScript('OnShow', DefaultPanelOnShow)
 end
 
+-- ignore functions
+function addon:IsIgnored(resultID)
+    local _,_,name,_,_,_,_,_,_,_,_,author = C_LFGList.GetSearchResultInfo(resultID)
+    if not name or not author then return end
+
+    if ignored_events[author] and ignored_events[author] == name then
+        return true
+    end
+end
+function addon:ToggleIgnore(resultID,menu)
+    local _,_,name,_,_,_,_,_,_,_,_,author = C_LFGList.GetSearchResultInfo(resultID)
+    if not name or not author then return end
+
+    -- you can only list one event at a time, so we use player names as the key
+    if addon:IsIgnored(resultID) then
+        ignored_events[author] = nil
+    else
+        ignored_events[author] = name
+    end
+
+    -- force the menu to update if we right click on this entry again
+    menu.pn_modified = true
+end
+
 function addon:StartNewSearch(req_members)
     -- grab category & filter at time of search
     addon.categoryID = SearchPanel.categoryID
@@ -60,6 +86,9 @@ function addon:StartNewSearch(req_members)
     addon.filters = SearchPanel.filters
     addon.preferredFilters = SearchPanel.preferredFilters
     addon.req_members = req_members
+
+    -- reset ignored events obviously
+    wipe(ignored_events)
 
     self:DelayedRefresh()
 end
@@ -173,6 +202,7 @@ function addon:LFG_LIST_SEARCH_RESULTS_RECEIVED()
 
             if  -- always ignore certain results-
                 (addon.req_members and members < addon.req_members) or
+                self:IsIgnored(id) or
                 player_ilvl < ilvl or
                 members == 40
             then

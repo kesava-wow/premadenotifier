@@ -8,6 +8,34 @@ local addon = PremadeNotifierFrame
 local button = CreateFrame('Button','PremadeNotifierButton',LFGListFrame.SearchPanel.RefreshButton)
 button:SetPoint('RIGHT', LFGListFrame.SearchPanel.RefreshButton, 'LEFT', 0, 0)
 
+-- modify the search entry menu dropdown --
+hooksecurefunc('EasyMenu', function(menu,frame,anchor,x,y,display)
+    if frame ~= LFGListFrameDropDown then return end
+    -- fetch result id from one of the report options
+    local resultID = menu[3].menuList[1].arg1
+
+    if not menu.pn_modified then
+        -- insert our ignore option
+        tinsert(menu, 4, {
+            text='Ignore',
+            tooltipOnButton=true,
+            tooltipTitle='Ignore',
+            tooltipText="Don't alert about this event when continuously searching."
+        })
+    elseif menu.pn_modified == resultID then
+        -- stop iterating if the menu was already modified for this entry
+        return
+    end
+
+    menu.pn_modified = resultID
+    menu[4].checked = addon:IsIgnored(resultID)
+    menu[4].func = addon.ToggleIgnore
+    menu[4].arg1 = resultID
+    menu[4].arg2 = menu
+
+    EasyMenu(menu, frame, anchor, x, y, display)
+end)
+
 -- this is a copy of RefreshButton from FrameXML/LFGList.xml
 button:SetSize(32,32)
 button:SetNormalTexture('Interface\\Buttons\\UI-SquareButton-Up')
