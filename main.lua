@@ -14,7 +14,7 @@ local search_again_at
 
 local CONTINUOUS_SEARCH_INTERVAL = 10
 local UPDATE_INTERVAL = .1
-local DEBUG = true
+--local DEBUG = true
 
 local ignored_events = {}
 
@@ -89,13 +89,16 @@ function addon:StartNewSearch(req_members, active_panel)
     addon.req_members = req_members
 
     addon.searching = true
+    addon.interrupted = nil
 
+    self:UI_SearchStarted()
     self:DelayedRefresh()
 end
 
 function addon:DoSearch()
     -- actually request the search from C 
     search_again_at = nil
+    addon.interrupted = nil
 
     if  SearchPanel:IsVisible() and (
             SearchPanel.categoryID ~= self.categoryID or
@@ -106,6 +109,9 @@ function addon:DoSearch()
     then
         -- don't force a search now if the UI is in use (presumably)
         d_print('mismatch in data set, assuming ui in use')
+
+        addon.interrupted = true
+        self:UI_SearchInterrupted()
 
         self:DelayedRefresh()
         return
@@ -123,6 +129,9 @@ function addon:DoSearch()
 
     self:RegisterEvent('LFG_LIST_SEARCH_FAILED')
     self:RegisterEvent('LFG_LIST_SEARCH_RESULTS_RECEIVED')
+
+    -- begin/resume animation
+    self:UI_SearchStarted()
 
     waiting_for_results = true
 
@@ -144,8 +153,10 @@ function addon:StopSearch()
     -- stop search and clean up events, scripts
     search_again_at = nil
     addon.searching = nil
-    
+    addon.interrupted = nil
+
     self:StopWaitingForResults()
+    self:UI_SearchStopped()
     self:SetScript('OnUpdate',nil)
 
     d_print('search stopped')
@@ -181,8 +192,8 @@ function addon:ADDON_LOADED(loaded_name)
     if loaded_name ~= folder then return end
     SearchPanel = LFGListFrame.SearchPanel
 
-    --self:RegisterEvent('LFG_LIST_AVAILABILITY_UPDATE')
-    --self:RegisterEvent('LFG_LIST_SEARCH_RESULTS_UPDATED')
+    -- perform UI modifications
+    self:UI_Init()
 end
 
 function addon:LFG_LIST_SEARCH_FAILED()
