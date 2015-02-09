@@ -87,8 +87,15 @@ end
 local function EasyMenu_Hook(menu,frame,anchor,x,y,display)
     if frame ~= LFGListFrameDropDown then return end
     -- fetch result id from one of the report options
-    local resultID = menu[3].menuList[1].arg1
+    if  not menu[3] or not menu[3].menuList[1] or
+        not menu[3].menuList[1].arg1
+    then
+        return
+    end
 
+    local resultID = tonumber(menu[3].menuList[1].arg1)
+    if not resultID then return end
+    
     if not menu.pn_modified then
         -- insert our ignore option
         tinsert(menu, 4, {
