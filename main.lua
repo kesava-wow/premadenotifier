@@ -23,10 +23,6 @@ local function d_print(m)
     if DEBUG then print('Premade|cff9966ffNotifier|r: '..m) end
 end
 
-local function GetGroupTable(i)
-    return _G['LFGListSearchPanelScrollFrameButton'..i]
-end
-
 -- Prevent manually browsing the UI from interfering with an active search
 local DisableDefaultButtons,EnableDefaultButtons
 do
@@ -96,7 +92,7 @@ function addon:StartNewSearch(req_members, active_panel)
 end
 
 function addon:DoSearch()
-    -- actually request the search from C 
+    -- actually request the search from C
     search_again_at = nil
     addon.interrupted = nil
 
@@ -163,7 +159,7 @@ function addon:StopSearch()
 end
 
 -- continuous search delay handler --
-do 
+do
     local function OnUpdate(self,elapsed)
         elap = elap + elapsed
         if elap >= UPDATE_INTERVAL then
