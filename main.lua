@@ -76,19 +76,23 @@ function addon:ToggleIgnore(resultID,menu)
 end
 
 function addon:StartNewSearch(req_members, active_panel)
+    if self.searching then
+        self:StopSearch()
+    end
+    
     -- grab category & filter at time of search
-    addon.categoryID = SearchPanel.categoryID
-    addon.searchText = SearchPanel.SearchBox:GetText()
-    addon.filters = SearchPanel.filters
-    addon.preferredFilters = SearchPanel.preferredFilters
-    addon.active_panel = active_panel
-    addon.req_members = req_members
+    self.categoryID = SearchPanel.categoryID
+    self.searchText = SearchPanel.SearchBox:GetText()
+    self.filters = SearchPanel.filters
+    self.preferredFilters = SearchPanel.preferredFilters
 
-    addon.searching = true
-    addon.interrupted = nil
+    self.active_panel = active_panel
+    self.req_members = req_members
+    self.searching = true
+    self.interrupted = nil
 
     self:UI_SearchStarted()
-    self:DelayedRefresh()
+    self:DoSearch()
 end
 
 function addon:DoSearch()
@@ -207,7 +211,7 @@ function addon:LFG_LIST_SEARCH_RESULTS_RECEIVED()
     local select_result
     if no_results > 0 then
         -- deep-filter results
-        local GSRI = C_LFGList.GetSearchResultInfo()
+        local GSRI = C_LFGList.GetSearchResultInfo
         for _,id in ipairs(results) do
             local _,_,name,_,_,ilvl,_,_,_,_,_,author,members = GSRI(id)
 
