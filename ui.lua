@@ -84,18 +84,21 @@ end
 
 -- activity menu hook ---------------------------------------------------------
 -- modify the search entry menu dropdown
+-- I had limited success modifying the menu BEFORE it was shown, so resorted
+-- to this. I should take another look at some point.
 local function EasyMenu_Hook(menu,frame,anchor,x,y,display)
+    -- dumb-verify we're modifying the right menu
     if frame ~= LFGListFrameDropDown then return end
-    -- fetch result id from one of the report options
     if  not menu[3] or not menu[3].menuList[1] or
-        not menu[3].menuList[1].arg1
+        not menu[3].menuList[1].arg1 or not menu[2]
     then
         return
     end
 
+    -- fetch result id from one of the report options
     local resultID = tonumber(menu[3].menuList[1].arg1)
     if not resultID then return end
-    
+
     if not menu.pn_modified then
         -- insert our ignore option
         tinsert(menu, 4, {
@@ -105,16 +108,24 @@ local function EasyMenu_Hook(menu,frame,anchor,x,y,display)
             tooltipText="Don't notify about this event when continuously searching (unless the title or leader changes)."
         })
     elseif menu.pn_modified == resultID then
-        -- stop iterating if the menu was already modified for this entry
+        -- stop recursing if the menu was already modified for this entry
         return
     end
 
     menu.pn_modified = resultID
-    menu[4].checked = addon:IsIgnored(resultID)
-    menu[4].func = addon.ToggleIgnore
-    menu[4].arg1 = resultID
-    menu[4].arg2 = menu
 
+    if menu[2] and menu[2].text == "Whisper" then
+        -- this is a player; just disable the ignore option
+        menu[4].disabled = true
+    else
+        menu[4].disabled = nil
+        menu[4].checked = addon:IsIgnored(resultID)
+        menu[4].func = addon.ToggleIgnore
+        menu[4].arg1 = resultID
+        menu[4].arg2 = menu
+    end
+
+    -- re-display the menu with our modifications
     EasyMenu(menu, frame, anchor, x, y, display)
 end
 
