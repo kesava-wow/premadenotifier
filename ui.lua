@@ -114,7 +114,7 @@ local function EasyMenu_Hook(menu,frame,anchor,x,y,display)
 
     menu.pn_modified = resultID
 
-    if menu[2] and menu[2].text == "Whisper" then
+    if menu[2].text == "Whisper" then
         -- this is a player; just disable the ignore option
         menu[4].disabled = true
     else
