@@ -115,8 +115,9 @@ local function EasyMenu_Hook(menu,frame,anchor,x,y,display)
     menu.pn_modified = resultID
 
     if menu[2].text == "Whisper" then
-        -- this is a player; just disable the ignore option
-        menu[4].disabled = true
+        -- this is a player; remove the ignore option
+        tremove(menu, 4)
+        menu.pn_modified = nil
     else
         menu[4].disabled = nil
         menu[4].checked = addon:IsIgnored(resultID)
