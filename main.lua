@@ -160,6 +160,7 @@ end
 
 -- continuous search delay handler --
 do
+    local GetTime = GetTime
     local function OnUpdate(self,elapsed)
         elap = elap + elapsed
         if elap >= UPDATE_INTERVAL then
@@ -205,9 +206,10 @@ function addon:LFG_LIST_SEARCH_RESULTS_RECEIVED()
     local no_results,results = C_LFGList.GetSearchResults()
     local select_result
     if no_results > 0 then
-        -- deep filter results
+        -- deep-filter results
+        local GSRI = C_LFGList.GetSearchResultInfo()
         for _,id in ipairs(results) do
-            local _,_,name,_,_,ilvl,_,_,_,_,_,author,members = C_LFGList.GetSearchResultInfo(id)
+            local _,_,name,_,_,ilvl,_,_,_,_,_,author,members = GSRI(id)
 
             if name and author then
                 if  -- always ignore certain results-
