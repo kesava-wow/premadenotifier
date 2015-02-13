@@ -108,35 +108,41 @@ local function EasyMenu_Hook(menu,frame,anchor,x,y,display)
         return
     end
 
-    -- fetch result id from one of the report options
-    local resultID = tonumber(menu[3].menuList[1].arg1)
-    if not resultID then return end
-
-    if not menu.pn_modified then
-        -- insert our ignore option
-        tinsert(menu, 4, {
-            text='Ignore',
-            tooltipOnButton=true,
-            tooltipTitle='Ignore',
-            tooltipText="Don't notify about this event when continuously searching (unless the title or leader changes)."
-        })
-    elseif menu.pn_modified == resultID then
-        -- stop recursing if the menu was already modified for this entry
-        return
-    end
-
-    menu.pn_modified = resultID
-
-    if menu[2].text == "Whisper" then
-        -- this is a player; remove the ignore option
-        tremove(menu, 4)
-        menu.pn_modified = nil
+    if menu[2].text == 'Whisper' then
+        -- this is a player; remove our ignore option
+        if menu.pn_modified == 'player' then return end
+        if menu[4] and menu[4].text == 'Ignore' then
+            tremove(menu,4)
+        end
+        
+        menu.pn_modified = 'player'
     else
-        menu[4].disabled = nil
-        menu[4].checked = addon:IsIgnored(resultID)
-        menu[4].func = addon.ToggleIgnore
-        menu[4].arg1 = resultID
-        menu[4].arg2 = menu
+        -- this is an activity;
+        -- fetch result id from one of the report options
+        local resultID = tonumber(menu[3].menuList[1].arg1)
+        if not resultID then return end
+
+        -- stop recursing if the menu was already modified for this entry
+        if menu.pn_modified == resultID then return end
+
+        if not menu.pn_modified or not menu[4] or menu[4].text ~= 'Ignore' then
+            -- insert our ignore option
+            tinsert(menu, 4, {
+                text='Ignore',
+                tooltipOnButton=true,
+                tooltipTitle='Ignore',
+                tooltipText="Don't notify about this event when continuously searching (unless the title or leader changes)."
+            })
+        end
+
+        if menu[4] and menu[4].text == 'Ignore' then
+            menu[4].checked = addon:IsIgnored(resultID)
+            menu[4].func = addon.ToggleIgnore
+            menu[4].arg1 = resultID
+            menu[4].arg2 = menu
+        end
+
+        menu.pn_modified = resultID
     end
 
     -- re-display the menu with our modifications
