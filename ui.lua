@@ -4,7 +4,7 @@
     All rights reserved.
 ]]
 local addon = PremadeNotifierFrame
-local button
+local button, menu_frame
 
 local tooltip_default_title = 'Continuous search'
 local tooltip_default_text = 'Continuously search for this filter in the background and open the search results when an event is found.\n\nRight click to search without closing the UI.\nCtrl-click to search with a minimum member requirement of 2.\nShift-click to search with a minimum member requirement of 10.'
@@ -36,7 +36,7 @@ end
 local function ButtonTooltip(button)
     GameTooltip:SetOwner(button, 'ANCHOR_RIGHT')
     GameTooltip:SetWidth(200)
-    
+
     if not addon.searching then
         GameTooltip:AddLine(tooltip_default_title)
         GameTooltip:AddLine(tooltip_default_text,1,1,1,true)
@@ -72,26 +72,29 @@ local function ButtonTooltipHide(button)
 end
 
 local function ButtonOnClick(button, mouse_button)
-    if addon.searching then
-        -- stop the current search
-        addon:StopSearch()
-        ButtonTooltip(button)
-        return
-    end
-
-    --                          refreshbtn  searchpanel lfglistfrm  pve/pvpstub
-    local active_panel = button:GetParent():GetParent():GetParent():GetParent():GetName()
-
-    local req_members = IsShiftKeyDown() and 10 or IsControlKeyDown() and 2 or nil
-    addon:StartNewSearch(req_members, active_panel)
-
     if mouse_button == 'LeftButton' then
+        -- start a search on left click...
+        if addon.searching then
+            -- stop the current search
+            addon:StopSearch()
+            ButtonTooltip(button)
+            return
+        end
+
+        --                          refreshbtn  searchpanel lfglistfrm  pve/pvpstub
+        local active_panel = button:GetParent():GetParent():GetParent():GetParent():GetName()
+        local req_members = IsShiftKeyDown() and 10 or IsControlKeyDown() and 2 or nil
+        addon:StartNewSearch(req_members, active_panel)
+
         -- Don't worry about the active panel here, as the PVEFrame contains
         -- all of them anyway
         HideUIPanel(PVEFrame)
     else
         -- immediately update the tooltip
         ButtonTooltip(button)
+
+        -- show advanced menu
+        menu_frame:Show()
     end
 end
 
@@ -114,7 +117,7 @@ local function EasyMenu_Hook(menu,frame,anchor,x,y,display)
         if menu[4] and menu[4].text == 'Ignore' then
             tremove(menu,4)
         end
-        
+
         menu.pn_modified = 'player'
     else
         -- this is an activity;
@@ -195,4 +198,70 @@ function addon:UI_Init()
     button:SetScript('OnLeave', ButtonTooltipHide)
     button:SetScript('OnMouseDown', ButtonOnMouseDown)
     button:SetScript('OnMouseUp', ButtonOnMouseUp)
+
+    do -- create advanced menu
+        menu_frame = CreateFrame('Frame', 'PremadeNotifierMenuFrame', LFGListFrame.SearchPanel)
+        menu_frame:SetPoint('TOPLEFT', LFGListFrame.SearchPanel, 'TOPRIGHT', 6, 1)
+        menu_frame:SetSize(150,200)
+        menu_frame:SetBackdrop({
+            edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
+            bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background-Dark",
+            tile = true,
+            tileSize = 32,
+            edgeSize = 16,
+            insets = {
+                top = 2,
+                right = 2,
+                bottom = 3,
+                left = 2
+            }
+        })
+
+        menu_frame:Hide()
+        menu_frame:EnableMouse(true)
+
+        LFGListFrame.SearchPanel:HookScript('OnHide', function()
+            menu_frame:Hide()
+        end)
+
+        local function OnEnterPressed(self)
+            self:ClearFocus()
+        end
+        local function OnEscapePressed(self)
+            self:ClearFocus()
+        end
+
+        local at_least = CreateFrame('EditBox', 'PremadeNotifierMenuFrame_AtLeast', menu_frame, 'InputBoxTemplate')
+        at_least:SetSize(30,10)
+        at_least:SetText('0')
+        at_least:SetAutoFocus(false)
+        at_least:SetFontObject(ChatFontNormal)
+
+        local at_most = CreateFrame('EditBox', 'PremadeNotifierMenuFrame_AtMost', menu_frame, 'InputBoxTemplate')
+        at_most:SetSize(30,10)
+        at_most:SetText('40')
+        at_most:SetAutoFocus(false)
+        at_most:SetFontObject(ChatFontNormal)
+
+        local num_members_between = menu_frame:CreateFontString(nil, 'ARTWORK', 'GameFontNormalSmall')
+        local num_members_and = menu_frame:CreateFontString(nil, 'ARTWORK', 'GameFontNormalSmall')
+        local num_members_members = menu_frame:CreateFontString(nil, 'ARTWORK', 'GameFontNormalSmall')
+
+        num_members_between:SetText('Between')
+        num_members_and:SetText('and')
+        num_members_members:SetText('members')
+
+        num_members_between:SetPoint('TOP', 0, -15)
+        num_members_and:SetPoint('TOP', num_members_between, 'BOTTOM', 0, -5)
+        num_members_members:SetPoint('TOP', num_members_and, 'BOTTOM', 0, -5)
+
+        at_least:SetPoint('RIGHT', num_members_and, 'LEFT', -3, 0)
+        at_most:SetPoint('LEFT', num_members_and, 'RIGHT', 8, 0)
+
+        at_least:SetScript('OnEscapePressed', OnEscapePressed)
+        at_least:SetScript('OnEnterPressed', OnEscapePressed)
+
+        at_most:SetScript('OnEscapePressed', OnEscapePressed)
+        at_most:SetScript('OnEnterPressed', OnEscapePressed)
+    end
 end
