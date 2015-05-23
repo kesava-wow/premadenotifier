@@ -18,6 +18,8 @@ local UPDATE_INTERVAL = .1
 
 local ignored_events = {}
 
+addon.filter = {}
+
 -- functions --
 local function d_print(m)
     if DEBUG then print('Premade|cff9966ffNotifier|r: '..m) end
@@ -75,11 +77,16 @@ function addon:ToggleIgnore(resultID,menu)
     menu.pn_modified = true
 end
 
-function addon:StartNewSearch(req_members, active_panel)
+function addon:SetFilter(key, value)
+    self.filter[key] = value
+    d_print('filter.'..key..': '..value)
+end
+
+function addon:StartNewSearch(active_panel)
     if self.searching then
         self:StopSearch()
     end
-    
+
     -- grab category & filter at time of search
     self.categoryID = SearchPanel.categoryID
     self.searchText = SearchPanel.SearchBox:GetText()
@@ -87,7 +94,6 @@ function addon:StartNewSearch(req_members, active_panel)
     self.preferredFilters = SearchPanel.preferredFilters
 
     self.active_panel = active_panel
-    self.req_members = req_members
     self.searching = true
     self.interrupted = nil
 
@@ -155,6 +161,9 @@ function addon:StopSearch()
     addon.searching = nil
     addon.interrupted = nil
 
+    -- reset filter
+    addon.filter = {}
+
     self:StopWaitingForResults()
     self:UI_SearchStopped()
     self:SetScript('OnUpdate',nil)
@@ -202,31 +211,52 @@ function addon:LFG_LIST_SEARCH_FAILED()
     self:StopWaitingForResults()
     self:DelayedRefresh()
 end
+
+
+local function Result_MatchesFilter(members)
+    if
+        (addon.filter.max_members and members <= addon.filter.max_members) and
+        (addon.filter.min_members and members >= addon.filter.min_members)
+    then
+        return true
+    end
+end
+
+local function Result_IsViable(id, ilvl)
+    local player_ilvl = GetAverageItemLevel()
+
+    if
+        not addon:IsIgnored(id) and
+        player_ilvl >= ilvl
+    then
+        return true
+    end
+end
+
+
 function addon:LFG_LIST_SEARCH_RESULTS_RECEIVED()
     self:StopWaitingForResults()
-    local player_ilvl = GetAverageItemLevel()
 
     -- parse results
     local no_results,results = C_LFGList.GetSearchResults()
     local select_result
     if no_results > 0 then
+
         -- deep-filter results
         local GSRI = C_LFGList.GetSearchResultInfo
         for _,id in ipairs(results) do
             local _,_,name,_,_,ilvl,_,_,_,_,_,author,members = GSRI(id)
 
             if name and author then
-                if  -- always ignore certain results-
-                    (addon.req_members and members < addon.req_members) or
-                    self:IsIgnored(id) or
-                    player_ilvl < ilvl or
-                    members == 40
+                if
+                    Result_IsViable(id, ilvl) and
+                    Result_MatchesFilter(members)
                 then
-                    no_results = no_results - 1
-                else
                     select_result = id
                     d_print('Result '..id..': '..name..' by '..author..' ['..members..']')
                     break
+                else
+                    no_results = no_results - 1
                 end
             end
         end

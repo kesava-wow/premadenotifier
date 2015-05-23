@@ -7,7 +7,7 @@ local addon = PremadeNotifierFrame
 local button, menu_frame
 
 local tooltip_default_title = 'Continuous search'
-local tooltip_default_text = 'Continuously search for this filter in the background and open the search results when an event is found.\n\nRight click to search without closing the UI.\nCtrl-click to search with a minimum member requirement of 2.\nShift-click to search with a minimum member requirement of 10.'
+local tooltip_default_text = 'Continuously search for this filter in the background and open the search results when an event is found.\n\nRight click to open advanced search UI.'
 
 local tooltip_search_title = 'Searching...'
 local tooltip_search_text = '\nClick again to cancel.'
@@ -58,8 +58,11 @@ local function ButtonTooltip(button)
             GameTooltip:AddDoubleLine('Category:', category_name, 1,.82,0, 1,1,1)
         end
 
-        if addon.req_members and addon.req_members > 1 then
-            GameTooltip:AddDoubleLine('Members:', addon.req_members, 1,.82,0, 1,1,1)
+        if addon.filter.min_members then
+            GameTooltip:AddDoubleLine('Min. members:', addon.filter.min_members, 1,.82,0, 1,1,1)
+        end
+        if addon.filter.max_members then
+            GameTooltip:AddDoubleLine('Max. members:', addon.filter.max_members, 1,.82,0, 1,1,1)
         end
 
         GameTooltip:AddLine(tooltip_search_text,1,1,1)
@@ -83,8 +86,8 @@ local function ButtonOnClick(button, mouse_button)
 
         --                          refreshbtn  searchpanel lfglistfrm  pve/pvpstub
         local active_panel = button:GetParent():GetParent():GetParent():GetParent():GetName()
-        local req_members = IsShiftKeyDown() and 10 or IsControlKeyDown() and 2 or nil
-        addon:StartNewSearch(req_members, active_panel)
+
+        addon:StartNewSearch(active_panel)
 
         -- Don't worry about the active panel here, as the PVEFrame contains
         -- all of them anyway
@@ -217,6 +220,8 @@ function addon:UI_Init()
             }
         })
 
+        -- TODO OnShow get current filter values. obviously.
+
         menu_frame:Hide()
         menu_frame:EnableMouse(true)
 
@@ -230,14 +235,19 @@ function addon:UI_Init()
         local function OnEscapePressed(self)
             self:ClearFocus()
         end
+        local function OnEditFocusLost(self)
+            addon:SetFilter(self.filter_key, tonumber(self:GetText()))
+        end
 
         local at_least = CreateFrame('EditBox', 'PremadeNotifierMenuFrame_AtLeast', menu_frame, 'InputBoxTemplate')
+        at_least.filter_key = 'min_members'
         at_least:SetSize(30,10)
         at_least:SetText('0')
         at_least:SetAutoFocus(false)
         at_least:SetFontObject(ChatFontNormal)
 
         local at_most = CreateFrame('EditBox', 'PremadeNotifierMenuFrame_AtMost', menu_frame, 'InputBoxTemplate')
+        at_most.filter_key = 'max_members'
         at_most:SetSize(30,10)
         at_most:SetText('40')
         at_most:SetAutoFocus(false)
@@ -260,8 +270,10 @@ function addon:UI_Init()
 
         at_least:SetScript('OnEscapePressed', OnEscapePressed)
         at_least:SetScript('OnEnterPressed', OnEscapePressed)
+        at_least:SetScript('OnEditFocusLost', OnEditFocusLost)
 
         at_most:SetScript('OnEscapePressed', OnEscapePressed)
         at_most:SetScript('OnEnterPressed', OnEscapePressed)
+        at_most:SetScript('OnEditFocusLost', OnEditFocusLost)
     end
 end
