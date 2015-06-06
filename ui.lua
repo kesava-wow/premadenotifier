@@ -12,19 +12,6 @@ local tooltip_default_text = 'Continuously search for this filter in the backgro
 local tooltip_search_title = 'Searching...'
 local tooltip_search_text = '\nClick again to cancel.'
 
---[[
-Button context menu:
-Options in the context menu do not close the UI and trigger an immediate search
-rather than waiting 10 seconds.
-
-Options:
-"Search" immediately search
-"At least x members..."
-    "2", "4", "9", "14", "19", "24"
-"At most x members..."
-    "1", "2", "3", "5", "10", "15", "20", "25", "30", "40"
-]]
-
 -- script handlers -------------------------------------------------------------
 local function ButtonOnMouseDown(button)
     button.icon:SetPoint('CENTER', button, 'CENTER', -2, -1)
