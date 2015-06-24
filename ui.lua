@@ -12,6 +12,8 @@ local tooltip_default_text = 'Continuously search for this filter in the backgro
 local tooltip_search_title = 'Searching...'
 local tooltip_search_text = '\nClick again to cancel.'
 
+local SearchPanel
+
 -- script handlers -------------------------------------------------------------
 local function ButtonOnMouseDown(button)
     button.icon:SetPoint('CENTER', button, 'CENTER', -2, -1)
@@ -153,7 +155,26 @@ local function EasyMenu_Hook(menu,frame,anchor,x,y,display)
     -- re-display the menu with our modifications
     EasyMenu(menu, frame, anchor, x, y, display)
 end
+-- default interface panel helpers ---------------------------------------------
+function addon:UI_OpenLFGListToResult(id)
+    -- TODO
+    -- default provides LFGListFrame_SelectResult(LFGListFrame.SearchPanel, result_id)
+    -- but doesn't scroll down to it
 
+    -- open frame to panel which was active at time of search
+    -- (doesn't actually affect displayed results)
+    if addon.active_panel == 'LFGListPVEStub' then
+        PVEFrame_TabOnClick(PVEFrameTab1)
+        GroupFinderFrameGroupButton4:Click()
+    else
+        PVEFrame_TabOnClick(PVEFrameTab2)
+        PVPQueueFrameCategoryButton4:Click()
+    end
+
+    -- jump to the search panel (updated by the search itself)
+    LFGListFrame_SetActivePanel(LFGListFrame, LFGListFrame.SearchPanel)
+    LFGListSearchPanel_SelectResult(LFGListFrame.SearchPanel, id)
+end
 -- initialize ------------------------------------------------------------------
 function addon:UI_Init()
     -- create loop search button

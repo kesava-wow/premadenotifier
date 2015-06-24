@@ -264,22 +264,7 @@ function addon:LFG_LIST_SEARCH_RESULTS_RECEIVED()
 
         if select_result and no_results >= 1 then
             addon:StopSearch()
-
-            -- open frame to panel which was active at time of search
-            if self.active_panel == 'LFGListPVEStub' then
-                PVEFrame_TabOnClick(PVEFrameTab1) -- pve
-                GroupFinderFrameGroupButton4:Click()
-            else
-                PVEFrame_TabOnClick(PVEFrameTab2) -- pvp
-                PVPQueueFrameCategoryButton4:Click()
-            end
-
-            -- jump to the search panel (which was updated by the search itself)
-            LFGListFrame_SetActivePanel(LFGListFrame,SearchPanel)
-
-            -- select the matched result
-            LFGListSearchPanel_SelectResult(SearchPanel, select_result)
-
+            addon:UI_OpenLFGListToResult(select_result)
             return
         end
     end
