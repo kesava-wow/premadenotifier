@@ -219,26 +219,28 @@ function addon:UI_Init()
             }
         })
 
-        -- TODO OnShow get current filter values. obviously.
-
         menu_frame:Hide()
         menu_frame:EnableMouse(true)
+
+        menu_frame.filter_elements = {}
+
+        local function InitFilterElement(element, key, default)
+            element.filter_key = key
+            element.filter_default = default
+            tinsert(menu_frame.filter_elements, element)
+        end
 
         LFGListFrame.SearchPanel:HookScript('OnHide', function()
             menu_frame:Hide()
         end)
 
         local at_least = CreateFrame('EditBox', 'PremadeNotifierMenuFrame_AtLeast', menu_frame, 'InputBoxTemplate')
-        at_least.filter_key = 'min_members'
         at_least:SetSize(30,10)
-        at_least:SetText('0')
         at_least:SetAutoFocus(false)
         at_least:SetFontObject(ChatFontNormal)
 
         local at_most = CreateFrame('EditBox', 'PremadeNotifierMenuFrame_AtMost', menu_frame, 'InputBoxTemplate')
-        at_most.filter_key = 'max_members'
         at_most:SetSize(30,10)
-        at_most:SetText('40')
         at_most:SetAutoFocus(false)
         at_most:SetFontObject(ChatFontNormal)
 
@@ -264,5 +266,15 @@ function addon:UI_Init()
         at_most:SetScript('OnEscapePressed', OnEscapePressed)
         at_most:SetScript('OnEnterPressed', OnEscapePressed)
         at_most:SetScript('OnEditFocusLost', OnEditFocusLost)
+
+        InitFilterElement(at_least, 'min_members', 0)
+        InitFilterElement(at_most, 'max_members', 40)
+
+        menu_frame:SetScript('OnShow', function(self)
+            for i,element in pairs(self.filter_elements) do
+                -- restore current filter values
+                element:SetText(addon.filter[element.filter_key] or element.filter_default)
+            end
+        end)
     end
 end
