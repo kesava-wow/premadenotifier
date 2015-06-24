@@ -214,20 +214,21 @@ end
 
 
 local function Result_MatchesFilter(members)
-    if
-        (addon.filter.max_members and members <= addon.filter.max_members) and
-        (addon.filter.min_members and members >= addon.filter.min_members)
-    then
-        return true
+    if addon.filter.max_members and members > addon.filter.max_members then
+        return
     end
+
+    if addon.filter.min_members and members < addon.filter.min_members then
+        return
+    end
+
+    return true
 end
 
 local function Result_IsViable(id, ilvl)
-    local player_ilvl = GetAverageItemLevel()
-
     if
         not addon:IsIgnored(id) and
-        player_ilvl >= ilvl
+        GetAverageItemLevel() >= ilvl
     then
         return true
     end

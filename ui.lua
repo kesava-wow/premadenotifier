@@ -88,6 +88,18 @@ local function ButtonOnClick(button, mouse_button)
     end
 end
 
+-- edit box scripts
+local function OnEnterPressed(self)
+    self:ClearFocus()
+end
+local function OnEscapePressed(self)
+    self:ClearFocus()
+end
+local function OnEditFocusLost(self)
+    if self.filter_key then
+        addon:SetFilter(self.filter_key, tonumber(self:GetText()))
+    end
+end
 -- activity menu hook ---------------------------------------------------------
 -- modify the search entry menu dropdown
 -- I had limited success modifying the menu BEFORE it was shown, so resorted
@@ -215,16 +227,6 @@ function addon:UI_Init()
         LFGListFrame.SearchPanel:HookScript('OnHide', function()
             menu_frame:Hide()
         end)
-
-        local function OnEnterPressed(self)
-            self:ClearFocus()
-        end
-        local function OnEscapePressed(self)
-            self:ClearFocus()
-        end
-        local function OnEditFocusLost(self)
-            addon:SetFilter(self.filter_key, tonumber(self:GetText()))
-        end
 
         local at_least = CreateFrame('EditBox', 'PremadeNotifierMenuFrame_AtLeast', menu_frame, 'InputBoxTemplate')
         at_least.filter_key = 'min_members'
