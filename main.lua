@@ -14,7 +14,7 @@ local search_again_at
 
 local CONTINUOUS_SEARCH_INTERVAL = 3
 local UPDATE_INTERVAL = .1
-local DEBUG = true
+--local DEBUG = true
 
 local ignored_events = {}
 

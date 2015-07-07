@@ -14,6 +14,9 @@ local tooltip_search_text = '\nClick again to cancel.'
 
 local SearchPanel
 
+-- toggled by the auto_signup checkbox
+local AutoSignUp_Enabled
+
 local function ui_print(m)
     print('Premade|cff9966ffNotifier|r: '..m)
 end
@@ -182,6 +185,27 @@ local function EasyMenu_Hook(menu,frame,anchor,x,y,display)
     EasyMenu(menu, frame, anchor, x, y, display)
 end
 -- default interface panel helpers ---------------------------------------------
+local function AutoSignUp(id)
+    local d = LFGListApplicationDialog
+    local result_data = { C_LFGList.GetSearchResultInfo(id) }
+
+    LFGListSearchPanel_SignUp(LFGListFrame)
+    LFGListSearchPanel_UpdateButtonStatus(LFGListFrame.SearchPanel)
+
+    if d.SignUpButton:IsEnabled() then
+        -- auto sign up and hide the sign up frame if roles are already checked
+        C_LFGList.ApplyToGroup(
+            id, "",
+            d.TankButton:IsShown() and d.TankButton.CheckButton:GetChecked(),
+            d.HealerButton:IsShown() and d.HealerButton.CheckButton:GetChecked(),
+            d.DamagerButton:IsShown() and d.DamagerButton.CheckButton:GetChecked()
+        )
+
+        StaticPopupSpecial_Hide(d)
+
+        ui_print('Applied to '..result_data[3].. ' by '..result_data[12]..' ('..result_data[13]..' members)')
+    end
+end
 function addon:UI_OpenLFGListToResult(id)
     -- TODO
     -- default provides LFGListFrame_SelectResult(LFGListFrame.SearchPanel, result_id)
@@ -201,23 +225,8 @@ function addon:UI_OpenLFGListToResult(id)
     LFGListFrame_SetActivePanel(LFGListFrame, LFGListFrame.SearchPanel)
     LFGListSearchPanel_SelectResult(LFGListFrame.SearchPanel, id)
 
-    -- automatically sign up
-    LFGListSearchPanel_SignUp(LFGListFrame)
-    LFGListSearchPanel_UpdateButtonStatus(LFGListFrame.SearchPanel)
-
-    local d = LFGListApplicationDialog
-    if d.SignUpButton:IsEnabled() then
-        C_LFGList.ApplyToGroup(
-            id, "",
-            d.TankButton:IsShown() and d.TankButton.CheckButton:GetChecked(),
-            d.HealerButton:IsShown() and d.HealerButton.CheckButton:GetChecked(),
-            d.DamagerButton:IsShown() and d.DamagerButton.CheckButton:GetChecked()
-        )
-
-        StaticPopupSpecial_Hide(d)
-
-        local result_data = { C_LFGList.GetSearchResultInfo(id) }
-        ui_print('Applied to '..result_data[3].. ' by '..result_data[12]..' ('..result_data[13]..' members)')
+    if AutoSignUp_Enabled then
+        AutoSignUp(id)
     end
 end
 -- initialize ------------------------------------------------------------------
@@ -270,7 +279,7 @@ function addon:UI_Init()
     do -- create advanced menu
         menu_frame = CreateFrame('Frame', 'PremadeNotifierMenuFrame', LFGListFrame.SearchPanel)
         menu_frame:SetPoint('TOPLEFT', LFGListFrame.SearchPanel, 'TOPRIGHT', 6, 1)
-        menu_frame:SetSize(150,200)
+        menu_frame:SetSize(150,110)
         menu_frame:SetBackdrop({
             edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
             bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background-Dark",
@@ -337,8 +346,12 @@ function addon:UI_Init()
         InitFilterElement(at_most, 'max_members', 40)
 
         -- auto-signup checkbox ################################################
-        local auto_signup = CreateCheckBox(menu_frame, 'AutoSignUp', 'Automatically sign up')
-        auto_signup:SetPoint('BOTTOMLEFT', 15, 15)
+        local auto_signup_callback = function(self)
+            AutoSignUp_Enabled = self:GetChecked()
+        end
+
+        local auto_signup = CreateCheckBox(menu_frame, 'AutoSignUp', 'Automatically sign up', auto_signup_callback)
+        auto_signup:SetPoint('BOTTOMLEFT', 10, 10)
 
         -- advanced frame scripts
         menu_frame:SetScript('OnShow', function(self)
