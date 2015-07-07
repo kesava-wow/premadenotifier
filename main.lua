@@ -12,9 +12,9 @@ local SearchPanel
 local waiting_for_results
 local search_again_at
 
-local CONTINUOUS_SEARCH_INTERVAL = 10
+local CONTINUOUS_SEARCH_INTERVAL = 3
 local UPDATE_INTERVAL = .1
---local DEBUG = true
+local DEBUG = true
 
 local ignored_events = {}
 
@@ -208,6 +208,7 @@ end
 
 function addon:LFG_LIST_SEARCH_FAILED()
     -- silently fail and try again
+    d_print('SEARCH_FAILED')
     self:StopWaitingForResults()
     self:DelayedRefresh()
 end
@@ -236,6 +237,7 @@ end
 
 
 function addon:LFG_LIST_SEARCH_RESULTS_RECEIVED()
+    d_print('RESULTS_RECEIVED')
     self:StopWaitingForResults()
 
     -- parse results
