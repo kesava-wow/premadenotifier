@@ -1,1 +1,4 @@
-* bump TOC
+* add advanced search options frame (accessible by right clicking on the search button)
+* add options to filter results matched by number of members precisely (in the advanced search frame)
+* add option to automatically sign up to a matched result as soon as it is found
+* increase search interval to 3 seconds (from 10)
