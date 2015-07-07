@@ -14,6 +14,32 @@ local tooltip_search_text = '\nClick again to cancel.'
 
 local SearchPanel
 
+local function ui_print(m)
+    print('Premade|cff9966ffNotifier|r: '..m)
+end
+
+-- element creation helpers ----------------------------------------------------
+local function CreateCheckBox(parent, name, desc, callback)
+    local check = CreateFrame('CheckButton', 'PremadeNotifierMenuFrame_'..name..'Check', parent, 'OptionsBaseCheckButtonTemplate')
+
+    check:SetScript('OnClick', function(self)
+        if self:GetChecked() then
+            PlaySound("igMainMenuOptionCheckBoxOn")
+        else
+            PlaySound("igMainMenuOptionCheckBoxOff")
+        end
+
+        if callback then
+            callback(self)
+        end
+    end)
+
+    check.desc = parent:CreateFontString(nil, 'ARTWORK', 'GameFontNormalSmall')
+    check.desc:SetText(desc)
+    check.desc:SetPoint('LEFT', check, 'RIGHT')
+
+    return check
+end
 -- script handlers -------------------------------------------------------------
 local function ButtonOnMouseDown(button)
     button.icon:SetPoint('CENTER', button, 'CENTER', -2, -1)
@@ -174,6 +200,25 @@ function addon:UI_OpenLFGListToResult(id)
     -- jump to the search panel (updated by the search itself)
     LFGListFrame_SetActivePanel(LFGListFrame, LFGListFrame.SearchPanel)
     LFGListSearchPanel_SelectResult(LFGListFrame.SearchPanel, id)
+
+    -- automatically sign up
+    LFGListSearchPanel_SignUp(LFGListFrame)
+    LFGListSearchPanel_UpdateButtonStatus(LFGListFrame.SearchPanel)
+
+    local d = LFGListApplicationDialog
+    if d.SignUpButton:IsEnabled() then
+        C_LFGList.ApplyToGroup(
+            id, "",
+            d.TankButton:IsShown() and d.TankButton.CheckButton:GetChecked(),
+            d.HealerButton:IsShown() and d.HealerButton.CheckButton:GetChecked(),
+            d.DamagerButton:IsShown() and d.DamagerButton.CheckButton:GetChecked()
+        )
+
+        StaticPopupSpecial_Hide(d)
+
+        local result_data = { C_LFGList.GetSearchResultInfo(id) }
+        ui_print('Applied to '..result_data[3].. ' by '..result_data[12]..' ('..result_data[13]..' members)')
+    end
 end
 -- initialize ------------------------------------------------------------------
 function addon:UI_Init()
@@ -291,6 +336,11 @@ function addon:UI_Init()
         InitFilterElement(at_least, 'min_members', 0)
         InitFilterElement(at_most, 'max_members', 40)
 
+        -- auto-signup checkbox ################################################
+        local auto_signup = CreateCheckBox(menu_frame, 'AutoSignUp', 'Automatically sign up')
+        auto_signup:SetPoint('BOTTOMLEFT', 15, 15)
+
+        -- advanced frame scripts
         menu_frame:SetScript('OnShow', function(self)
             for i,element in pairs(self.filter_elements) do
                 -- restore current filter values

@@ -244,7 +244,6 @@ function addon:LFG_LIST_SEARCH_RESULTS_RECEIVED()
     local no_results,results = C_LFGList.GetSearchResults()
     local select_result
     if no_results > 0 then
-
         -- deep-filter results
         local GSRI = C_LFGList.GetSearchResultInfo
         for _,id in ipairs(results) do
