@@ -126,7 +126,9 @@ function addon:DoSearch()
     -- disable buttons which can interfere at this point
     DisableDefaultButtons()
 
-    C_LFGList.Search(self.categoryID, self.searchText, self.filters, self.preferredFilters)
+    -- LFGList.lua, LFGListSearchPanel_DoSearch
+    local languages = C_LFGList.GetLanguageSearchFilter()
+    C_LFGList.Search(self.categoryID, self.searchText, self.filters, self.preferredFilters, languages)
 
     -- as forcing a search like this interferes with the UI anyway, also
     -- move back to the searched category
