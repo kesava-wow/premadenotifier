@@ -93,6 +93,8 @@ local function ButtonTooltipHide(button)
 end
 
 local function ButtonOnClick(button, mouse_button)
+    PlaySound("igMainMenuOptionCheckBoxOn")
+
     if mouse_button == 'LeftButton' then
         -- start a search on left click...
         if addon.searching then
@@ -114,8 +116,12 @@ local function ButtonOnClick(button, mouse_button)
         -- immediately update the tooltip
         ButtonTooltip(button)
 
-        -- show advanced menu
-        menu_frame:Show()
+        -- toggle advanced menu
+        if menu_frame:IsShown() then
+            menu_frame:Hide()
+        else
+            menu_frame:Show()
+        end
     end
 end
 

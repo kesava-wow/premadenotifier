@@ -2,3 +2,4 @@
 * add options to filter results matched by number of members precisely (in the advanced search frame)
 * add option to automatically sign up to a matched result as soon as it is found
 * increase search interval to 3 seconds (from 10)
+* add support for the language filter introduced in 6.2
