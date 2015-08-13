@@ -2,6 +2,7 @@
 ## Author: Kesava
 ## Title: Premade|cff9966ffNotifier|r
 ## Notes: It notifies you. About premades.
+## LoadManagers: AddonLoader
 ## X-LoadOn-Always: delayed
 ## SavedVariables: PremadeNotifierSaved
 
