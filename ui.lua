@@ -426,6 +426,8 @@ function addon:UI_Init()
                 -- restore current filter values
                 element:SetText(addon.filter[element.filter_key] or element.filter_default)
             end
+
+            auto_signup:SetChecked(AutoSignUp_Enabled)
         end)
     end
 
