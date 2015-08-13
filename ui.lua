@@ -10,7 +10,8 @@ local tooltip_default_title = 'Continuous search'
 local tooltip_default_text = 'Continuously search for this filter in the background and open the search results when an event is found.\n\nHold SHIFT while clicking to search and save this search across sessions.\nRIGHT CLICK to change advanced settings.'
 
 local tooltip_search_title = 'Searching...'
-local tooltip_search_text = '\nShift click this save this search.\nClick again to cancel.'
+local tooltip_search_cancel = 'Click again to cancel.'
+local tooltip_search_save = 'Shift click to save this search.'
 
 local SearchPanel
 
@@ -62,7 +63,6 @@ local function ButtonTooltip(button)
         -- add search information to the tooltip
         if addon.interrupted then
             GameTooltip:AddLine('Paused')
-            GameTooltip:AddLine('Search is paused while you use the UI.\n',1,1,1)
         else
             GameTooltip:AddLine(tooltip_search_title)
         end
@@ -84,13 +84,24 @@ local function ButtonTooltip(button)
         end
 
         if AutoSignUp_Enabled then
-            GameTooltip:AddLine('Will automatically sign up')
+            GameTooltip:AddLine('Will automatically sign up.')
         end
         if PremadeNotifierSaved.filter then
-            GameTooltip:AddLine('Search is saved')
+            GameTooltip:AddLine('Search is saved.')
         end
 
-        GameTooltip:AddLine(tooltip_search_text,1,1,1)
+        GameTooltip:AddLine(' ')
+
+        if not PremadeNotifierSaved.filter and not addon.interrupted then
+            GameTooltip:AddLine(tooltip_search_save,1,1,1)
+        end
+
+        GameTooltip:AddLine(tooltip_search_cancel,1,1,1)
+
+        if addon.interrupted then
+            GameTooltip:AddLine(' ')
+            GameTooltip:AddLine('Search is paused while you use the UI.',1,.3,.3)
+        end
     end
 
     GameTooltip:Show()
@@ -330,6 +341,14 @@ function addon:UI_Init()
         end
         function addon:UI_SearchInterrupted()
             icon_ani:Pause()
+
+            if button:IsVisible() and
+               GameTooltip:IsVisible() and
+               GetMouseFocus() == button
+            then
+                -- update tooltip
+                ButtonTooltip(button)
+            end
         end
     end
 
