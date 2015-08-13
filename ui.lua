@@ -132,7 +132,7 @@ local function ButtonOnClick(button, mouse_button)
 
     if mouse_button == 'LeftButton' then
         if addon.searching then
-            if IsShiftKeyDown() then
+            if IsShiftKeyDown() and not addon.interrupted then
                 -- save the active search
                 UpdateSavedSearch(true)
                 HideUIPanel(PVEFrame)
