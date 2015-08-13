@@ -231,6 +231,10 @@ function addon:UI_OpenLFGListToResult(id)
     LFGListFrame_SetActivePanel(LFGListFrame, LFGListFrame.SearchPanel)
     LFGListSearchPanel_SelectResult(LFGListFrame.SearchPanel, id)
 
+    -- result found notification/s
+    PlaySoundKitID(8960) -- readycheck
+    FlashClientIcon()
+
     if AutoSignUp_Enabled then
         AutoSignUp(id)
     end
