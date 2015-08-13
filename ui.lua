@@ -83,6 +83,13 @@ local function ButtonTooltip(button)
             GameTooltip:AddDoubleLine('Max. members:', addon.filter.max_members, 1,.82,0, 1,1,1)
         end
 
+        if AutoSignUp_Enabled then
+            GameTooltip:AddLine('Will automatically sign up')
+        end
+        if PremadeNotifierSaved.filter then
+            GameTooltip:AddLine('Search is saved')
+        end
+
         GameTooltip:AddLine(tooltip_search_text,1,1,1)
     end
 
@@ -92,24 +99,51 @@ local function ButtonTooltipHide(button)
     GameTooltip:Hide()
 end
 
-local function GetFilterVariables()
+local function UpdateSavedSearch(reset)
+    if not reset and not PremadeNotifierSaved.filter then return end
+    if not addon.active_panel then return end
+
+    PremadeNotifierSaved.AutoSignUp_Enabled = AutoSignUp_Enabled
+    PremadeNotifierSaved.filter = addon.filter
+    PremadeNotifierSaved.active_panel = addon.active_panel
+    PremadeNotifierSaved.default_filter = {
+        categoryID       = addon.categoryID,
+        searchText       = addon.searchText,
+        filters          = addon.filters,
+        preferredFilters = addon.preferredFilters
+    }
+end
+local function GetDefaultFilterVariables()
     -- get filter variables from default UI
     addon.categoryID = addon.SearchPanel.categoryID
     addon.searchText = addon.SearchPanel.SearchBox:GetText()
     addon.filters = addon.SearchPanel.filters
     addon.preferredFilters = addon.SearchPanel.preferredFilters
 
+    UpdateSavedSearch()
 end
+local function SetFilter(key, value)
+    addon.filter[key] = value
+    UpdateSavedSearch()
+end
+
 local function ButtonOnClick(button, mouse_button)
     PlaySound("igMainMenuOptionCheckBoxOn")
 
     if mouse_button == 'LeftButton' then
-        -- start a search on left click...
         if addon.searching then
-            -- stop the current search
-            addon:StopSearch()
-            ButtonTooltip(button)
-            return
+            if IsShiftKeyDown() then
+                -- save the active search
+                UpdateSavedSearch(true)
+                HideUIPanel(PVEFrame)
+                return
+            else
+                -- stop the current search
+                addon:StopSearch()
+                ButtonTooltip(button)
+                wipe(PremadeNotifierSaved)
+                return
+            end
         end
 
         --                          refreshbtn  searchpanel lfglistfrm  pve/pvpstub
@@ -117,8 +151,16 @@ local function ButtonOnClick(button, mouse_button)
         addon.active_panel = active_panel
 
         -- grab category & filter at time of search
-        GetFilterVariables()
+        GetDefaultFilterVariables()
         addon:StartNewSearch()
+
+        if IsShiftKeyDown() then
+            -- save this search
+            UpdateSavedSearch(true)
+        else
+            -- clear saved search if manually refreshed/changed
+            wipe(PremadeNotifierSaved)
+        end
 
         -- Don't worry about the active panel here, as the PVEFrame contains
         -- all of them anyway
@@ -145,7 +187,7 @@ local function OnEscapePressed(self)
 end
 local function OnEditFocusLost(self)
     if self.filter_key then
-        addon:SetFilter(self.filter_key, tonumber(self:GetText()))
+        SetFilter(self.filter_key, tonumber(self:GetText()))
     end
 end
 -- activity menu hook ---------------------------------------------------------
@@ -249,6 +291,9 @@ function addon:UI_OpenLFGListToResult(id)
     if AutoSignUp_Enabled then
         AutoSignUp(id)
     end
+
+    -- clear saved search
+    wipe(PremadeNotifierSaved)
 end
 -- initialize ------------------------------------------------------------------
 function addon:UI_Init()
@@ -300,7 +345,7 @@ function addon:UI_Init()
     do -- create advanced menu
         menu_frame = CreateFrame('Frame', 'PremadeNotifierMenuFrame', LFGListFrame.SearchPanel)
         menu_frame:SetPoint('TOPLEFT', LFGListFrame.SearchPanel, 'TOPRIGHT', 6, 1)
-        menu_frame:SetSize(150,120)
+        menu_frame:SetSize(150,110)
         menu_frame:SetBackdrop({
             edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
             bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background-Dark",
@@ -369,29 +414,11 @@ function addon:UI_Init()
         -- auto-signup checkbox ################################################
         local auto_signup_callback = function(self)
             AutoSignUp_Enabled = self:GetChecked()
+            UpdateSavedSearch()
         end
 
         local auto_signup = CreateCheckBox(menu_frame, 'AutoSignUp', 'Automatically sign up', auto_signup_callback)
-        auto_signup:SetPoint('TOPLEFT', 10, -60)
-
-        -- save search checkbox ################################################
-        local save_search_callback = function(self)
-            if self:GetChecked() then
-                PremadeNotifierSaved = PremadeNotifierSaved or {}
-                PremadeNotifierSaved.filter = addon.filter
-                PremadeNotifierSaved.default_filter = {
-                    categoryID       = addon.categoryID,
-                    searchText       = addon.searchText,
-                    filters          = addon.filters,
-                    preferredFilters = addon.preferredFilters
-                }
-            else
-                wipe(PremadeNotifierSaved)
-            end
-        end
-
-        local save_search = CreateCheckBox(menu_frame, 'SaveSearch', 'Save across sessions', save_search_callback)
-        save_search:SetPoint('TOP', auto_signup, 'BOTTOM', 0, 5)
+        auto_signup:SetPoint('BOTTOMLEFT', 10, 10)
 
         -- advanced frame scripts
         menu_frame:SetScript('OnShow', function(self)
@@ -400,5 +427,19 @@ function addon:UI_Init()
                 element:SetText(addon.filter[element.filter_key] or element.filter_default)
             end
         end)
+    end
+
+    -- restore saved search
+    if PremadeNotifierSaved.filter then
+        addon.filter = PremadeNotifierSaved.filter
+        addon.active_panel = PremadeNotifierSaved.active_panel
+        for k,v in pairs(PremadeNotifierSaved.default_filter) do
+            addon[k] = v
+        end
+
+        AutoSignUp_Enabled = PremadeNotifierSaved.AutoSignUp_Enabled
+
+        -- begin saved search
+        addon:StartNewSearch()
     end
 end

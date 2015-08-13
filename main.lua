@@ -77,11 +77,6 @@ function addon:ToggleIgnore(resultID,menu)
     menu.pn_modified = true
 end
 
-function addon:SetFilter(key, value)
-    self.filter[key] = value
-    d_print('filter.'..key..': '..value)
-end
-
 function addon:StartNewSearch()
     if self.searching then
         self:StopSearch()
