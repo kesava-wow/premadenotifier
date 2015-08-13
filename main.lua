@@ -82,18 +82,11 @@ function addon:SetFilter(key, value)
     d_print('filter.'..key..': '..value)
 end
 
-function addon:StartNewSearch(active_panel)
+function addon:StartNewSearch()
     if self.searching then
         self:StopSearch()
     end
 
-    -- grab category & filter at time of search
-    self.categoryID = SearchPanel.categoryID
-    self.searchText = SearchPanel.SearchBox:GetText()
-    self.filters = SearchPanel.filters
-    self.preferredFilters = SearchPanel.preferredFilters
-
-    self.active_panel = active_panel
     self.searching = true
     self.interrupted = nil
 
@@ -203,6 +196,7 @@ end
 function addon:ADDON_LOADED(loaded_name)
     if loaded_name ~= folder then return end
     SearchPanel = LFGListFrame.SearchPanel
+    addon.SearchPanel = SearchPanel
 
     -- perform UI modifications
     self:UI_Init()

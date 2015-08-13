@@ -92,6 +92,14 @@ local function ButtonTooltipHide(button)
     GameTooltip:Hide()
 end
 
+local function GetFilterVariables()
+    -- get filter variables from default UI
+    addon.categoryID = addon.SearchPanel.categoryID
+    addon.searchText = addon.SearchPanel.SearchBox:GetText()
+    addon.filters = addon.SearchPanel.filters
+    addon.preferredFilters = addon.SearchPanel.preferredFilters
+
+end
 local function ButtonOnClick(button, mouse_button)
     PlaySound("igMainMenuOptionCheckBoxOn")
 
@@ -106,8 +114,11 @@ local function ButtonOnClick(button, mouse_button)
 
         --                          refreshbtn  searchpanel lfglistfrm  pve/pvpstub
         local active_panel = button:GetParent():GetParent():GetParent():GetParent():GetName()
+        addon.active_panel = active_panel
 
-        addon:StartNewSearch(active_panel)
+        -- grab category & filter at time of search
+        GetFilterVariables()
+        addon:StartNewSearch()
 
         -- Don't worry about the active panel here, as the PVEFrame contains
         -- all of them anyway
@@ -289,7 +300,7 @@ function addon:UI_Init()
     do -- create advanced menu
         menu_frame = CreateFrame('Frame', 'PremadeNotifierMenuFrame', LFGListFrame.SearchPanel)
         menu_frame:SetPoint('TOPLEFT', LFGListFrame.SearchPanel, 'TOPRIGHT', 6, 1)
-        menu_frame:SetSize(150,110)
+        menu_frame:SetSize(150,120)
         menu_frame:SetBackdrop({
             edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
             bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background-Dark",
@@ -361,7 +372,26 @@ function addon:UI_Init()
         end
 
         local auto_signup = CreateCheckBox(menu_frame, 'AutoSignUp', 'Automatically sign up', auto_signup_callback)
-        auto_signup:SetPoint('BOTTOMLEFT', 10, 10)
+        auto_signup:SetPoint('TOPLEFT', 10, -60)
+
+        -- save search checkbox ################################################
+        local save_search_callback = function(self)
+            if self:GetChecked() then
+                PremadeNotifierSaved = PremadeNotifierSaved or {}
+                PremadeNotifierSaved.filter = addon.filter
+                PremadeNotifierSaved.default_filter = {
+                    categoryID       = addon.categoryID,
+                    searchText       = addon.searchText,
+                    filters          = addon.filters,
+                    preferredFilters = addon.preferredFilters
+                }
+            else
+                wipe(PremadeNotifierSaved)
+            end
+        end
+
+        local save_search = CreateCheckBox(menu_frame, 'SaveSearch', 'Save across sessions', save_search_callback)
+        save_search:SetPoint('TOP', auto_signup, 'BOTTOM', 0, 5)
 
         -- advanced frame scripts
         menu_frame:SetScript('OnShow', function(self)
