@@ -2,6 +2,7 @@
 ## Author: Kesava
 ## Title: Premade|cff9966ffNotifier|r
 ## Notes: It notifies you. About premades.
+## X-LoadOn-Always: delayed
 ## SavedVariables: PremadeNotifierSaved
 
 main.lua

@@ -190,6 +190,11 @@ end
 -- event handlers --
 function addon:ADDON_LOADED(loaded_name)
     if loaded_name ~= folder then return end
+
+    if not PremadeNotifierSaved or type(PremadeNotifierSaved) ~= 'table' then
+        PremadeNotifierSaved = {}
+    end
+
     SearchPanel = LFGListFrame.SearchPanel
     addon.SearchPanel = SearchPanel
 
