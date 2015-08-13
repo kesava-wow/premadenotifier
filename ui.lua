@@ -7,10 +7,10 @@ local addon = PremadeNotifierFrame
 local button, menu_frame
 
 local tooltip_default_title = 'Continuous search'
-local tooltip_default_text = 'Continuously search for this filter in the background and open the search results when an event is found.\n\nRight click to open advanced search UI.'
+local tooltip_default_text = 'Continuously search for this filter in the background and open the search results when an event is found.\n\nHold SHIFT while clicking to search and save this search across sessions.\nRIGHT CLICK to change advanced settings.'
 
 local tooltip_search_title = 'Searching...'
-local tooltip_search_text = '\nClick again to cancel.'
+local tooltip_search_text = '\nShift click this save this search.\nClick again to cancel.'
 
 local SearchPanel
 
@@ -438,6 +438,8 @@ function addon:UI_Init()
         end
 
         AutoSignUp_Enabled = PremadeNotifierSaved.AutoSignUp_Enabled
+
+        ui_print('Saved search restored.')
 
         -- begin saved search
         addon:StartNewSearch()
