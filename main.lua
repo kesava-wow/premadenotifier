@@ -55,7 +55,7 @@ end
 
 -- ignore functions
 function addon:IsIgnored(resultID)
-    local _,_,name,_,_,_,_,_,_,_,_,author = C_LFGList.GetSearchResultInfo(resultID)
+    local _,_,name,_,_,_,_,_,_,_,_,_,author = C_LFGList.GetSearchResultInfo(resultID)
     if not name or not author then return end
 
     if ignored_events[author] and ignored_events[author] == name then
@@ -63,7 +63,7 @@ function addon:IsIgnored(resultID)
     end
 end
 function addon:ToggleIgnore(resultID,menu)
-    local _,_,name,_,_,_,_,_,_,_,_,author = C_LFGList.GetSearchResultInfo(resultID)
+    local _,_,name,_,_,_,_,_,_,_,_,_,author = C_LFGList.GetSearchResultInfo(resultID)
     if not name or not author then return end
 
     -- you can only list one event at a time, so we use player names as the key
@@ -243,7 +243,7 @@ function addon:LFG_LIST_SEARCH_RESULTS_RECEIVED()
         -- deep-filter results
         local GSRI = C_LFGList.GetSearchResultInfo
         for _,id in ipairs(results) do
-            local _,_,name,_,_,ilvl,_,_,_,_,_,author,members = GSRI(id)
+            local _,_,name,_,_,ilvl,_,_,_,_,_,_,author,members = GSRI(id)
 
             if name and author then
                 if

@@ -1,8 +1,2 @@
-* add advanced search options frame (accessible by right clicking on the search button)
-* add options to filter results matched by number of members precisely (in the advanced search frame)
-* add option to automatically sign up to a matched result as soon as it is found
-* add ability to save a search across sessions (shift+click the button)
-* increase search interval to 3 seconds (from 10)
-* add support for the language filter introduced in 6.2
-* add sound and window task-bar button flash (on Windows) when a result is found
-* add support for AddonLoader (delayed load)
+* bump toc
+* update for legion api changes
