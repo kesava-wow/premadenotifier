@@ -273,7 +273,10 @@ local function AutoSignUp(id)
 
         StaticPopupSpecial_Hide(d)
 
-        ui_print('Applied to '..result_data[3].. ' by '..result_data[12]..' ('..result_data[13]..' members)')
+        ui_print(string.format(
+            'Applied to |cffffff88%s|r by |cffffff88%s|r (%s members)',
+            result_data[3],result_data[13],result_data[14]
+        ))
     end
 end
 function addon:UI_OpenLFGListToResult(id)
