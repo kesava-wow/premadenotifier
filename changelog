@@ -1,2 +1,1 @@
-* bump toc
-* update for legion api changes
+* fix lua error when auto applying
