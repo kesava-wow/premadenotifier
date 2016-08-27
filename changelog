@@ -1,3 +1,5 @@
 * increase advanced frame width slightly
 * add buttons for search/save-search to the advanced frame
 * save ignored events across sessions
+* add button to continue a search forever (e.g. even after a group has been found and joined)
+* will now automatically sign up for all events if multiple are found at the same time
