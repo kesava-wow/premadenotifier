@@ -101,7 +101,8 @@ function addon:DoSearch()
     search_again_at = nil
     addon.interrupted = nil
 
-    if IsInGroup() or
+    if (PremadeNotifierSaved and PremadeNotifierSaved.forever and IsInGroup())
+       or
        (SearchPanel:IsVisible() and (
             SearchPanel.categoryID ~= self.categoryID or
             SearchPanel.SearchBox:GetText() ~= self.searchText or
