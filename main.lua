@@ -64,6 +64,24 @@ function addon:IsIgnored(resultID)
         return true
     end
 end
+function addon:IgnoreResult(id)
+    local _,_,name,_,_,_,_,_,_,_,_,_,author = C_LFGList.GetSearchResultInfo(id)
+    if not name or not author then return end
+    addon.ignored_events[author] = name
+
+    if PremadeNotifierSaved and PremadeNotifierSaved.ignored_events then
+        PremadeNotifierSaved.ignored_events = addon.ignored_events
+    end
+end
+function addon:UnignoreResult(id)
+    local _,_,_,_,_,_,_,_,_,_,_,_,author = C_LFGList.GetSearchResultInfo(id)
+    if not author then return end
+    addon.ignored_events[author] = nil
+
+    if PremadeNotifierSaved and PremadeNotifierSaved.ignored_events then
+        PremadeNotifierSaved.ignored_events = addon.ignored_events
+    end
+end
 function addon:ToggleIgnore(resultID,menu)
     local _,_,name,_,_,_,_,_,_,_,_,_,author = C_LFGList.GetSearchResultInfo(resultID)
     if not name or not author then return end

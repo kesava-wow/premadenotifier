@@ -318,7 +318,7 @@ function addon:UI_OpenLFGListToResults(ids)
         for k,id in ipairs(ids) do
             AutoSignUp(id)
             -- ignore auto-signed events
-            addon:ToggleIgnore(id)
+            addon:IgnoreResult(id)
         end
     end
 
