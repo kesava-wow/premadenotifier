@@ -340,22 +340,27 @@ function addon:UI_OpenLFGListToResults(ids)
     end
 
     -- TODO
-    -- default provides LFGListFrame_SelectResult(LFGListFrame.SearchPanel, result_id)
-    -- but doesn't scroll down to it
+    -- LFGListFrame_SelectResult(LFGListFrame.SearchPanel, result_id)
+    -- doesn't scroll down to selection
 
-    -- open frame to panel which was active at time of search
-    -- (doesn't actually affect displayed results)
-    if addon.active_panel == 'LFGListPVEStub' then
-        PVEFrame_TabOnClick(PVEFrameTab1)
-        GroupFinderFrameGroupButton4:Click()
-    else
-        PVEFrame_TabOnClick(PVEFrameTab2)
-        PVPQueueFrameCategoryButton4:Click()
+    if not AutoSignUp_Enabled or
+       not PremadeNotifierSaved or
+       not PremadeNotifierSaved.forever
+    then
+        -- open frame to panel which was active at time of search
+        -- (doesn't actually affect displayed results)
+        if addon.active_panel == 'LFGListPVEStub' then
+            PVEFrame_TabOnClick(PVEFrameTab1)
+            GroupFinderFrameGroupButton4:Click()
+        else
+            PVEFrame_TabOnClick(PVEFrameTab2)
+            PVPQueueFrameCategoryButton4:Click()
+        end
+
+        -- jump to the search panel (updated by the search itself)
+        LFGListFrame_SetActivePanel(LFGListFrame, LFGListFrame.SearchPanel)
+        LFGListSearchPanel_SelectResult(LFGListFrame.SearchPanel, ids[1])
     end
-
-    -- jump to the search panel (updated by the search itself)
-    LFGListFrame_SetActivePanel(LFGListFrame, LFGListFrame.SearchPanel)
-    LFGListSearchPanel_SelectResult(LFGListFrame.SearchPanel, ids[1])
 
     -- result found notification/s
     PlaySoundKitID(8960) -- readycheck
