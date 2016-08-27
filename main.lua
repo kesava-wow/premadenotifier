@@ -245,8 +245,9 @@ function addon:LFG_LIST_SEARCH_RESULTS_RECEIVED()
 
     -- parse results
     local no_results,results = C_LFGList.GetSearchResults()
-    local select_result
     if no_results > 0 then
+        local viable_results = {}
+
         -- deep-filter results
         local GSRI = C_LFGList.GetSearchResultInfo
         for _,id in ipairs(results) do
@@ -257,22 +258,21 @@ function addon:LFG_LIST_SEARCH_RESULTS_RECEIVED()
                     Result_IsViable(id, ilvl) and
                     Result_MatchesFilter(members)
                 then
-                    select_result = id
+                    tinsert(viable_results,id)
                     d_print('Result '..id..': '..name..' by '..author..' ['..members..']')
-                    break
                 else
                     no_results = no_results - 1
                 end
             end
         end
 
-        if select_result and no_results >= 1 then
+        if #viable_results > 0 and no_results >= 1 then
+            addon:UI_OpenLFGListToResults(viable_results)
+
             if PremadeNotifierSaved and not PremadeNotifierSaved.forever then
                 addon:StopSearch()
+                return
             end
-
-            addon:UI_OpenLFGListToResult(select_result)
-            return
         end
     end
 

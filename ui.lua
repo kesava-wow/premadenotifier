@@ -286,7 +286,11 @@ local function AutoSignUp(id)
         ))
     end
 end
-function addon:UI_OpenLFGListToResult(id)
+function addon:UI_OpenLFGListToResults(ids)
+    if type(ids) ~= 'table' or #ids == 0 then
+        return
+    end
+
     -- TODO
     -- default provides LFGListFrame_SelectResult(LFGListFrame.SearchPanel, result_id)
     -- but doesn't scroll down to it
@@ -303,14 +307,17 @@ function addon:UI_OpenLFGListToResult(id)
 
     -- jump to the search panel (updated by the search itself)
     LFGListFrame_SetActivePanel(LFGListFrame, LFGListFrame.SearchPanel)
-    LFGListSearchPanel_SelectResult(LFGListFrame.SearchPanel, id)
+    LFGListSearchPanel_SelectResult(LFGListFrame.SearchPanel, ids[1])
 
     -- result found notification/s
     PlaySoundKitID(8960) -- readycheck
     FlashClientIcon()
 
     if AutoSignUp_Enabled then
-        AutoSignUp(id)
+        -- auto sign up to all viable results
+        for k,id in ipairs(ids) do
+            AutoSignUp(id)
+        end
     end
 
     if PremadeNotifierSaved and not PremadeNotifierSaved.forever then
