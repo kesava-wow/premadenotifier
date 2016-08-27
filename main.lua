@@ -7,6 +7,8 @@ local folder,ns = ...
 local addon = CreateFrame('frame','PremadeNotifierFrame')
 local elap = 0
 local _
+local OnUpdate
+local GetTime = GetTime
 
 local SearchPanel
 local waiting_for_results
@@ -226,6 +228,7 @@ function addon:DoSearch()
     self:UI_SearchStarted()
 
     waiting_for_results = GetTime() + MAX_WAIT_TIME
+    self:SetScript('OnUpdate',OnUpdate)
 
     d_print('searching')
 end
@@ -258,41 +261,37 @@ function addon:StopSearch()
 end
 
 -- continuous search delay handler #############################################
-do
-    local GetTime = GetTime
-    local function OnUpdate(self,elapsed)
-        elap = elap + elapsed
-        if elap >= UPDATE_INTERVAL then
-            elap = 0
+function OnUpdate(self,elapsed)
+    elap = elap + elapsed
+    if elap >= UPDATE_INTERVAL then
+        elap = 0
 
-            if not parse_results and
-               not waiting_for_results and
-               not search_again_at
-            then
-                self:SetScript('OnUpdate',nil)
-                return
-            end
+        if not parse_results and
+           not waiting_for_results and
+           not search_again_at
+        then
+            self:SetScript('OnUpdate',nil)
+            return
+        end
 
-            if parse_results and GetTime() >= parse_results then
-                ParseResults()
-            end
+        if parse_results and GetTime() >= parse_results then
+            ParseResults()
+        end
 
-           if (waiting_for_results and GetTime() >= waiting_for_results) or
-              (search_again_at and GetTime() >= search_again_at)
-            then
-                self:DoSearch()
-            end
+       if (waiting_for_results and GetTime() >= waiting_for_results) or
+          (search_again_at and GetTime() >= search_again_at)
+        then
+            self:DoSearch()
         end
     end
+end
+function addon:DelayedRefresh()
+    -- insert a delayed refresh
+    if waiting_for_results or search_again_at ~= nil then return end
+    search_again_at = GetTime() + CONTINUOUS_SEARCH_INTERVAL
+    self:SetScript('OnUpdate',OnUpdate)
 
-    function addon:DelayedRefresh()
-        -- insert a delayed refresh
-        if waiting_for_results or search_again_at ~= nil then return end
-        search_again_at = GetTime() + CONTINUOUS_SEARCH_INTERVAL
-        self:SetScript('OnUpdate',OnUpdate)
-
-        d_print('delayed refresh scheduled for '..search_again_at)
-    end
+    d_print('delayed refresh scheduled for '..search_again_at)
 end
 
 -- event handlers ##############################################################
@@ -324,6 +323,7 @@ function addon:LFG_LIST_SEARCH_RESULTS_RECEIVED()
 
     -- results aren't immediately available, so parse them after a delay
     parse_results = GetTime() + PARSE_RESULTS_DELAY
+    self:SetScript('OnUpdate',OnUpdate)
 
     -- search again after a short delay
     self:DelayedRefresh()
