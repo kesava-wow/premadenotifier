@@ -43,10 +43,17 @@ do
             DisableDefaultButtons()
         end
     end
+    local DefaultPanelOnHide = function()
+        if addon.interrupted then
+            -- immediately retry search upon closing the panel
+            addon:DoSearch()
+        end
+    end
 
     hooksecurefunc('LFGListCategorySelection_UpdateNavButtons', DefaultPanelOnShow)
     LFGListFrame.CategorySelection:HookScript('OnShow', DefaultPanelOnShow)
     LFGListFrame.SearchPanel:HookScript('OnShow', DefaultPanelOnShow)
+    LFGListFrame.SearchPanel:HookScript('OnHide', DefaultPanelOnHide)
 end
 
 -- ignore functions
@@ -132,6 +139,7 @@ function addon:DoSearch()
         self:UI_SearchInterrupted()
 
         self:DelayedRefresh()
+
         return
     end
 
