@@ -134,7 +134,11 @@ local function ButtonTooltip(button)
             GameTooltip:AddLine('Will automatically sign up.')
         end
         if PremadeNotifierSaved.filter then
-            GameTooltip:AddLine('Search is saved.')
+            if PremadeNotifierSaved.forever then
+                GameTooltip:AddLine('Search is permanently saved.')
+            else
+                GameTooltip:AddLine('Search is saved.')
+            end
         end
 
         GameTooltip:AddLine(' ')
@@ -309,8 +313,10 @@ function addon:UI_OpenLFGListToResult(id)
         AutoSignUp(id)
     end
 
-    -- clear saved search
-    wipe(PremadeNotifierSaved)
+    if PremadeNotifierSaved and not PremadeNotifierSaved.forever then
+        -- clear saved search
+        wipe(PremadeNotifierSaved)
+    end
 end
 -- initialize ------------------------------------------------------------------
 function addon:UI_Init()
@@ -370,7 +376,7 @@ function addon:UI_Init()
     do -- create advanced menu
         menu_frame = CreateFrame('Frame', 'PremadeNotifierMenuFrame', LFGListFrame.SearchPanel)
         menu_frame:SetPoint('TOPLEFT', LFGListFrame.SearchPanel, 'TOPRIGHT', 6, 1)
-        menu_frame:SetSize(160,125)
+        menu_frame:SetSize(160,150)
         menu_frame:SetBackdrop({
             edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
             bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background-Dark",
@@ -449,7 +455,7 @@ function addon:UI_Init()
         local search_button = CreateFrame('Button',nil,menu_frame,'UIPanelButtonTemplate')
         search_button:SetText("Search")
         search_button:SetSize(50,22)
-        search_button:SetPoint('BOTTOMLEFT',10,10)
+        search_button:SetPoint('BOTTOMLEFT',10,35)
 
         search_button:SetScript('OnClick',function()
             StartSearch()
@@ -468,6 +474,16 @@ function addon:UI_Init()
                 -- search with new filter + save
                 StartSearch(true)
             end
+        end)
+
+        local search_forever_button = CreateFrame('Button',nil,menu_frame,'UIPanelButtonTemplate')
+        search_forever_button:SetText("Search forever")
+        search_forever_button:SetSize(140,22)
+        search_forever_button:SetPoint('TOPLEFT',search_button,'BOTTOMLEFT',0,-2)
+
+        search_forever_button:SetScript('OnClick',function()
+            save_search_button:Click()
+            PremadeNotifierSaved.forever = true
         end)
 
         -- advanced frame scripts

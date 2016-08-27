@@ -14,7 +14,10 @@ local search_again_at
 
 local CONTINUOUS_SEARCH_INTERVAL = 3
 local UPDATE_INTERVAL = .1
---local DEBUG = true
+local DEBUG
+--@debug@
+DEBUG = true
+--@end-debug@
 
 addon.ignored_events = {}
 addon.filter = {}
@@ -264,7 +267,10 @@ function addon:LFG_LIST_SEARCH_RESULTS_RECEIVED()
         end
 
         if select_result and no_results >= 1 then
-            addon:StopSearch()
+            if PremadeNotifierSaved and not PremadeNotifierSaved.forever then
+                addon:StopSearch()
+            end
+
             addon:UI_OpenLFGListToResult(select_result)
             return
         end
