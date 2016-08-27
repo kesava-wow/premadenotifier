@@ -103,7 +103,8 @@ local function ButtonOnMouseUp(button)
 end
 
 local function ButtonTooltip(button)
-    GameTooltip:SetOwner(button, 'ANCHOR_RIGHT')
+    GameTooltip:SetOwner(button, 'ANCHOR_NONE')
+    GameTooltip:SetPoint('TOPLEFT',button,'TOPRIGHT')
     GameTooltip:SetWidth(200)
 
     if not addon.searching then
@@ -228,7 +229,8 @@ local function SaveSearchButtonOnClick()
     end
 end
 local function SearchForeverButtonOnEnter(self)
-    GameTooltip:SetOwner(self, 'ANCHOR_RIGHT')
+    GameTooltip:SetOwner(self, 'ANCHOR_NONE')
+    GameTooltip:SetPoint('TOPLEFT',self,'TOPRIGHT')
     GameTooltip:SetWidth(200)
     GameTooltip:AddLine(tooltip_forever_title)
     GameTooltip:AddLine(tooltip_forever,1,1,1,true)
