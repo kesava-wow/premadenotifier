@@ -75,8 +75,10 @@ function addon:ToggleIgnore(resultID,menu)
         addon.ignored_events[author] = name
     end
 
-    -- force the menu to update if we right click on this entry again
-    menu.pn_modified = true
+    if menu then
+        -- force the menu to update if we right click on this entry again
+        menu.pn_modified = true
+    end
 
     if PremadeNotifierSaved and PremadeNotifierSaved.ignored_events then
         -- update saved search ignores

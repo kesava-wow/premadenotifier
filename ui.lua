@@ -317,6 +317,8 @@ function addon:UI_OpenLFGListToResults(ids)
         -- auto sign up to all viable results
         for k,id in ipairs(ids) do
             AutoSignUp(id)
+            -- ignore auto-signed events
+            addon:ToggleIgnore(id)
         end
     end
 
