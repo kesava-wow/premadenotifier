@@ -24,7 +24,7 @@ addon.filter = {}
 
 -- functions --
 local function d_print(m)
-    if DEBUG then print('Premade|cff9966ffNotifier|r: '..m) end
+    if DEBUG then print(GetTime()..' Premade|cff9966ffNotifier|r: '..m) end
 end
 
 -- Prevent manually browsing the UI from interfering with an active search
@@ -161,7 +161,7 @@ function addon:DoSearch()
     -- begin/resume animation
     self:UI_SearchStarted()
 
-    waiting_for_results = true
+    waiting_for_results = GetTime()
 
     d_print('searching')
 end
@@ -199,9 +199,12 @@ do
     local function OnUpdate(self,elapsed)
         elap = elap + elapsed
         if elap >= UPDATE_INTERVAL then
-            if not search_again_at then
+            if not waiting_for_results and not search_again_at then
                 self:SetScript('OnUpdate',nil)
-            elseif GetTime() > search_again_at then
+            elseif
+                (waiting_for_results and GetTime() - waiting_for_results > 10) or
+                (search_again_at and GetTime() >= search_again_at)
+            then
                 self:DoSearch()
             end
 
