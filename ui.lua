@@ -310,8 +310,9 @@ end
 -- default interface panel helpers ---------------------------------------------
 local function AutoSignUp(id)
     local d = LFGListApplicationDialog
-    local result_data = { C_LFGList.GetSearchResultInfo(id) }
 
+    -- run this to show and update the role selection dialog
+    -- (currently selected group doesn't matter)
     LFGListSearchPanel_SignUp(LFGListFrame)
     LFGListSearchPanel_UpdateButtonStatus(LFGListFrame.SearchPanel)
 
@@ -326,6 +327,7 @@ local function AutoSignUp(id)
 
         StaticPopupSpecial_Hide(d)
 
+        local result_data = { C_LFGList.GetSearchResultInfo(id) }
         ui_print(string.format(
             'Applied to |cffffff88%s|r by |cffffff88%s|r (%s members)',
             result_data[3],result_data[13],result_data[14]
