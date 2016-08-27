@@ -14,7 +14,7 @@ local tooltip_search_cancel = 'Click again to cancel.'
 local tooltip_search_save = 'Shift click to save this search.'
 
 local tooltip_forever_title = 'Search forever'
-local tooltip_forever = 'Search for this filter, save it across sessions and continue to search even after a group has been found, joined, then left.\n\nNote that being in any group (including non-LFGList groups) will pause this search.'
+local tooltip_forever = 'Search for this filter, save it across sessions and continue to search even after a group has been found and joined.\n\nNote that being in any group (including non-LFGList groups) will pause this search.\n\nThe UI will not pop-up when using this along with auto-signup.'
 
 local SearchPanel
 

@@ -16,7 +16,7 @@ local CONTINUOUS_SEARCH_INTERVAL = 3
 local UPDATE_INTERVAL = .1
 local DEBUG
 --@debug@
-DEBUG = true
+--DEBUG = true
 --@end-debug@
 
 addon.ignored_events = {}
