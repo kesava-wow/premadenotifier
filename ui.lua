@@ -199,6 +199,49 @@ local function ButtonOnClick(button, mouse_button)
     end
 end
 
+-- menu frame scripts
+local function MenuFrameOnShow(self)
+    for i,element in pairs(self.filter_elements) do
+        -- restore current filter values
+        element:SetText(addon.filter[element.filter_key] or element.filter_default)
+    end
+
+    PremadeNotifierMenuFrame_AutoSignUpCheck:SetChecked(AutoSignUp_Enabled)
+end
+
+local function AutoSignupCallback(self)
+    AutoSignUp_Enabled = self:GetChecked()
+    UpdateSavedSearch()
+end
+
+-- menu frame button scripts
+local function SearchButtonOnClick()
+    StartSearch()
+end
+local function SaveSearchButtonOnClick()
+    if addon.searching and not addon.interrupted then
+        -- save the current search
+        UpdateSavedSearch(true)
+    else
+        -- search with new filter + save
+        StartSearch(true)
+    end
+end
+local function SearchForeverButtonOnEnter(self)
+    GameTooltip:SetOwner(self, 'ANCHOR_RIGHT')
+    GameTooltip:SetWidth(200)
+    GameTooltip:AddLine(tooltip_forever_title)
+    GameTooltip:AddLine(tooltip_forever,1,1,1,true)
+    GameTooltip:Show()
+end
+local function SearchForeverButtonOnLeave()
+    GameTooltip:Hide()
+end
+local function SearchForeverButtonOnClick()
+    SaveSearchButtonOnClick()
+    PremadeNotifierSaved.forever = true
+end
+
 -- edit box scripts
 local function OnEnterPressed(self)
     self:ClearFocus()
@@ -455,12 +498,7 @@ function addon:UI_Init()
         InitFilterElement(at_most, 'max_members', 40)
 
         -- auto-signup checkbox ################################################
-        local auto_signup_callback = function(self)
-            AutoSignUp_Enabled = self:GetChecked()
-            UpdateSavedSearch()
-        end
-
-        local auto_signup = CreateCheckBox(menu_frame, 'AutoSignUp', 'Automatically sign up', auto_signup_callback)
+        local auto_signup = CreateCheckBox(menu_frame, 'AutoSignUp', 'Automatically sign up', AutoSignupCallback)
         auto_signup:SetPoint('TOPLEFT', 10, -60)
 
         -- buttons #############################################################
@@ -469,54 +507,26 @@ function addon:UI_Init()
         search_button:SetSize(50,22)
         search_button:SetPoint('BOTTOMLEFT',10,35)
 
-        search_button:SetScript('OnClick',function()
-            StartSearch()
-        end)
+        search_button:SetScript('OnClick',SearchButtonOnClick)
 
         local save_search_button = CreateFrame('Button',nil,menu_frame,'UIPanelButtonTemplate')
         save_search_button:SetText("Save+Search")
         save_search_button:SetSize(85,22)
         save_search_button:SetPoint('LEFT',search_button,'RIGHT',5,0)
 
-        save_search_button:SetScript('OnClick',function()
-            if addon.searching and not addon.interrupted then
-                -- save the current search
-                UpdateSavedSearch(true)
-            else
-                -- search with new filter + save
-                StartSearch(true)
-            end
-        end)
+        save_search_button:SetScript('OnClick',SaveSearchButtonOnClick)
 
         local search_forever_button = CreateFrame('Button',nil,menu_frame,'UIPanelButtonTemplate')
         search_forever_button:SetText(tooltip_forever_title)
         search_forever_button:SetSize(140,22)
         search_forever_button:SetPoint('TOPLEFT',search_button,'BOTTOMLEFT',0,-2)
 
-        search_forever_button:SetScript('OnEnter',function(self)
-            GameTooltip:SetOwner(self, 'ANCHOR_RIGHT')
-            GameTooltip:SetWidth(200)
-            GameTooltip:AddLine(tooltip_forever_title)
-            GameTooltip:AddLine(tooltip_forever,1,1,1,true)
-            GameTooltip:Show()
-        end)
-        search_forever_button:SetScript('OnLeave',function()
-            GameTooltip:Hide()
-        end)
-        search_forever_button:SetScript('OnClick',function()
-            save_search_button:Click()
-            PremadeNotifierSaved.forever = true
-        end)
+        search_forever_button:SetScript('OnEnter',SearchForeverButtonOnEnter)
+        search_forever_button:SetScript('OnLeave',SearchForeverButtonOnLeave)
+        search_forever_button:SetScript('OnClick',SearchForeverButtonOnClick)
 
         -- advanced frame scripts
-        menu_frame:SetScript('OnShow', function(self)
-            for i,element in pairs(self.filter_elements) do
-                -- restore current filter values
-                element:SetText(addon.filter[element.filter_key] or element.filter_default)
-            end
-
-            auto_signup:SetChecked(AutoSignUp_Enabled)
-        end)
+        menu_frame:SetScript('OnShow',MenuFrameOnShow)
     end
 
     -- restore saved search
