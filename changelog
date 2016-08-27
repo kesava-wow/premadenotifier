@@ -1,1 +1,3 @@
-* fix lua error when auto applying
+* increase advanced frame width slightly
+* add buttons for search/save-search to the advanced frame
+* save ignored events across sessions

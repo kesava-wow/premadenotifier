@@ -58,6 +58,7 @@ local function UpdateSavedSearch(reset)
         filters          = addon.filters,
         preferredFilters = addon.preferredFilters
     }
+    PremadeNotifierSaved.ignored_events = addon.ignored_events
 end
 local function GetDefaultFilterVariables()
     -- get filter variables from default UI

@@ -16,8 +16,7 @@ local CONTINUOUS_SEARCH_INTERVAL = 3
 local UPDATE_INTERVAL = .1
 --local DEBUG = true
 
-local ignored_events = {}
-
+addon.ignored_events = {}
 addon.filter = {}
 
 -- functions --
@@ -58,7 +57,7 @@ function addon:IsIgnored(resultID)
     local _,_,name,_,_,_,_,_,_,_,_,_,author = C_LFGList.GetSearchResultInfo(resultID)
     if not name or not author then return end
 
-    if ignored_events[author] and ignored_events[author] == name then
+    if addon.ignored_events[author] and addon.ignored_events[author] == name then
         return true
     end
 end
@@ -68,13 +67,18 @@ function addon:ToggleIgnore(resultID,menu)
 
     -- you can only list one event at a time, so we use player names as the key
     if addon:IsIgnored(resultID) then
-        ignored_events[author] = nil
+        addon.ignored_events[author] = nil
     else
-        ignored_events[author] = name
+        addon.ignored_events[author] = name
     end
 
     -- force the menu to update if we right click on this entry again
     menu.pn_modified = true
+
+    if PremadeNotifierSaved and PremadeNotifierSaved.ignored_events then
+        -- update saved search ignores
+        PremadeNotifierSaved.ignored_events = addon.ignored_events
+    end
 end
 
 function addon:StartNewSearch()
