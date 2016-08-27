@@ -101,14 +101,16 @@ function addon:DoSearch()
     search_again_at = nil
     addon.interrupted = nil
 
-    if  SearchPanel:IsVisible() and (
+    if IsInGroup() or
+       (SearchPanel:IsVisible() and (
             SearchPanel.categoryID ~= self.categoryID or
             SearchPanel.SearchBox:GetText() ~= self.searchText or
             SearchPanel.filters ~= self.filters or
             SearchPanel.preferredFilters ~= self.preferredFilters
-        )
+       ))
     then
         -- don't force a search now if the UI is in use (presumably)
+        -- or if we're already in a group
         d_print('mismatch in data set, assuming ui in use')
 
         addon.interrupted = true
