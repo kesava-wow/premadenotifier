@@ -30,22 +30,16 @@ end
 -- Prevent manually browsing the UI from interfering with an active search
 local DisableDefaultButtons,EnableDefaultButtons
 do
-    local do_disable
-
     DisableDefaultButtons = function()
-        do_disable = true
         LFGListFrame.CategorySelection.FindGroupButton:Disable()
         SearchPanel.RefreshButton:Disable()
     end
-
     EnableDefaultButtons = function()
-        do_disable = nil
         LFGListFrame.CategorySelection.FindGroupButton:Enable()
         SearchPanel.RefreshButton:Enable()
     end
-
     local DefaultPanelOnShow = function()
-        if do_disable then
+        if waiting_for_results then
             DisableDefaultButtons()
         end
     end
