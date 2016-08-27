@@ -13,6 +13,9 @@ local tooltip_search_title = 'Searching...'
 local tooltip_search_cancel = 'Click again to cancel.'
 local tooltip_search_save = 'Shift click to save this search.'
 
+local tooltip_forever_title = 'Search forever'
+local tooltip_forever = 'Search for this filter, save it across sessions and continue to search even after a group has been found, joined, then left.\n\nNote that being in any group (including non-LFGList groups) will pause this search.'
+
 local SearchPanel
 
 -- toggled by the auto_signup checkbox
@@ -486,10 +489,20 @@ function addon:UI_Init()
         end)
 
         local search_forever_button = CreateFrame('Button',nil,menu_frame,'UIPanelButtonTemplate')
-        search_forever_button:SetText("Search forever")
+        search_forever_button:SetText(tooltip_forever_title)
         search_forever_button:SetSize(140,22)
         search_forever_button:SetPoint('TOPLEFT',search_button,'BOTTOMLEFT',0,-2)
 
+        search_forever_button:SetScript('OnEnter',function(self)
+            GameTooltip:SetOwner(self, 'ANCHOR_RIGHT')
+            GameTooltip:SetWidth(200)
+            GameTooltip:AddLine(tooltip_forever_title)
+            GameTooltip:AddLine(tooltip_forever,1,1,1,true)
+            GameTooltip:Show()
+        end)
+        search_forever_button:SetScript('OnLeave',function()
+            GameTooltip:Hide()
+        end)
         search_forever_button:SetScript('OnClick',function()
             save_search_button:Click()
             PremadeNotifierSaved.forever = true
