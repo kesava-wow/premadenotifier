@@ -11,9 +11,12 @@ local _
 local SearchPanel
 local waiting_for_results
 local search_again_at
+local prase_results
 
 local CONTINUOUS_SEARCH_INTERVAL = 3
 local UPDATE_INTERVAL = .1
+local PARSE_RESULTS_DELAY = .5
+local MAX_WAIT_TIME = 10
 local DEBUG
 --@debug@
 --DEBUG = true
@@ -22,9 +25,69 @@ local DEBUG
 addon.ignored_events = {}
 addon.filter = {}
 
--- functions --
+-- local functions #############################################################
 local function d_print(m)
     if DEBUG then print(GetTime()..' Premade|cff9966ffNotifier|r: '..m) end
+end
+
+local ParseResults
+do
+    local function Result_MatchesFilter(members)
+        if addon.filter.max_members and members > addon.filter.max_members then
+            return
+        end
+
+        if addon.filter.min_members and members < addon.filter.min_members then
+            return
+        end
+
+        return true
+    end
+    local function Result_IsViable(id, ilvl)
+        if
+            not addon:IsIgnored(id) and
+            GetAverageItemLevel() >= ilvl
+        then
+            return true
+        end
+    end
+    function ParseResults()
+        parse_results = nil
+
+        d_print('parsing search results')
+
+        local no_results,results = C_LFGList.GetSearchResults()
+        if no_results > 0 then
+            local viable_results = {}
+
+            -- deep-filter results
+            local GSRI = C_LFGList.GetSearchResultInfo
+            for _,id in ipairs(results) do
+                local _,_,name,_,_,ilvl,_,_,_,_,_,_,author,members = GSRI(id)
+
+                if name and author then
+                    if
+                        Result_IsViable(id, ilvl) and
+                        Result_MatchesFilter(members)
+                    then
+                        tinsert(viable_results,id)
+                        d_print('Result '..id..': '..name..' by '..author..' ['..members..']')
+                    else
+                        no_results = no_results - 1
+                    end
+                end
+            end
+
+            if #viable_results > 0 and no_results >= 1 then
+                addon:UI_OpenLFGListToResults(viable_results)
+
+                if PremadeNotifierSaved and not PremadeNotifierSaved.forever then
+                    addon:StopSearch()
+                    return
+                end
+            end
+        end
+    end
 end
 
 -- Prevent manually browsing the UI from interfering with an active search
@@ -56,7 +119,7 @@ do
     LFGListFrame.SearchPanel:HookScript('OnHide', DefaultPanelOnHide)
 end
 
--- ignore functions
+-- ignore functions ############################################################
 function addon:IsIgnored(resultID)
     local _,_,name,_,_,_,_,_,_,_,_,_,author = C_LFGList.GetSearchResultInfo(resultID)
     if not name or not author then return end
@@ -105,6 +168,7 @@ function addon:ToggleIgnore(resultID,menu)
     end
 end
 
+-- search functions ############################################################
 function addon:StartNewSearch()
     if self.searching then
         self:StopSearch()
@@ -161,7 +225,7 @@ function addon:DoSearch()
     -- begin/resume animation
     self:UI_SearchStarted()
 
-    waiting_for_results = GetTime()
+    waiting_for_results = GetTime() + MAX_WAIT_TIME
 
     d_print('searching')
 end
@@ -193,22 +257,31 @@ function addon:StopSearch()
     d_print('search stopped')
 end
 
--- continuous search delay handler --
+-- continuous search delay handler #############################################
 do
     local GetTime = GetTime
     local function OnUpdate(self,elapsed)
         elap = elap + elapsed
         if elap >= UPDATE_INTERVAL then
-            if not waiting_for_results and not search_again_at then
+            elap = 0
+
+            if not parse_results and
+               not waiting_for_results and
+               not search_again_at
+            then
                 self:SetScript('OnUpdate',nil)
-            elseif
-                (waiting_for_results and GetTime() - waiting_for_results > 10) or
-                (search_again_at and GetTime() >= search_again_at)
+                return
+            end
+
+            if parse_results and GetTime() >= parse_results then
+                ParseResults()
+            end
+
+           if (waiting_for_results and GetTime() >= waiting_for_results) or
+              (search_again_at and GetTime() >= search_again_at)
             then
                 self:DoSearch()
             end
-
-            elap = 0
         end
     end
 
@@ -222,7 +295,7 @@ do
     end
 end
 
--- event handlers --
+-- event handlers ##############################################################
 function addon:ADDON_LOADED(loaded_name)
     if loaded_name ~= folder then return end
 
@@ -245,64 +318,12 @@ function addon:LFG_LIST_SEARCH_FAILED()
 end
 
 
-local function Result_MatchesFilter(members)
-    if addon.filter.max_members and members > addon.filter.max_members then
-        return
-    end
-
-    if addon.filter.min_members and members < addon.filter.min_members then
-        return
-    end
-
-    return true
-end
-
-local function Result_IsViable(id, ilvl)
-    if
-        not addon:IsIgnored(id) and
-        GetAverageItemLevel() >= ilvl
-    then
-        return true
-    end
-end
-
-
 function addon:LFG_LIST_SEARCH_RESULTS_RECEIVED()
     d_print('RESULTS_RECEIVED')
     self:StopWaitingForResults()
 
-    -- parse results
-    local no_results,results = C_LFGList.GetSearchResults()
-    if no_results > 0 then
-        local viable_results = {}
-
-        -- deep-filter results
-        local GSRI = C_LFGList.GetSearchResultInfo
-        for _,id in ipairs(results) do
-            local _,_,name,_,_,ilvl,_,_,_,_,_,_,author,members = GSRI(id)
-
-            if name and author then
-                if
-                    Result_IsViable(id, ilvl) and
-                    Result_MatchesFilter(members)
-                then
-                    tinsert(viable_results,id)
-                    d_print('Result '..id..': '..name..' by '..author..' ['..members..']')
-                else
-                    no_results = no_results - 1
-                end
-            end
-        end
-
-        if #viable_results > 0 and no_results >= 1 then
-            addon:UI_OpenLFGListToResults(viable_results)
-
-            if PremadeNotifierSaved and not PremadeNotifierSaved.forever then
-                addon:StopSearch()
-                return
-            end
-        end
-    end
+    -- results aren't immediately available, so parse them after a delay
+    parse_results = GetTime() + PARSE_RESULTS_DELAY
 
     -- search again after a short delay
     self:DelayedRefresh()
