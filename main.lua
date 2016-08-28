@@ -68,8 +68,9 @@ do
                 local _,_,name,_,_,ilvl,_,_,_,_,_,_,author,members = GSRI(id)
 
                 if name and author then
-                    if
-                        Result_IsViable(id, ilvl) and
+                    d_print(name..' by '..author..' ('..members..' members)')
+
+                    if  Result_IsViable(id, ilvl) and
                         Result_MatchesFilter(members)
                     then
                         tinsert(viable_results,id)
@@ -80,10 +81,10 @@ do
                 end
             end
 
-            if #viable_results > 0 and no_results >= 1 then
+            if #viable_results > 0 then
                 addon:UI_OpenLFGListToResults(viable_results)
 
-                if PremadeNotifierSaved and not PremadeNotifierSaved.forever then
+                if not PremadeNotifierSaved.forever then
                     addon:StopSearch()
                     return
                 end
@@ -135,7 +136,7 @@ function addon:IgnoreResult(id)
     if not name or not author then return end
     addon.ignored_events[author] = name
 
-    if PremadeNotifierSaved and PremadeNotifierSaved.ignored_events then
+    if PremadeNotifierSaved.ignored_events then
         PremadeNotifierSaved.ignored_events = addon.ignored_events
     end
 end
@@ -144,7 +145,7 @@ function addon:UnignoreResult(id)
     if not author then return end
     addon.ignored_events[author] = nil
 
-    if PremadeNotifierSaved and PremadeNotifierSaved.ignored_events then
+    if PremadeNotifierSaved.ignored_events then
         PremadeNotifierSaved.ignored_events = addon.ignored_events
     end
 end
@@ -164,7 +165,7 @@ function addon:ToggleIgnore(resultID,menu)
         menu.pn_modified = true
     end
 
-    if PremadeNotifierSaved and PremadeNotifierSaved.ignored_events then
+    if PremadeNotifierSaved.ignored_events then
         -- update saved search ignores
         PremadeNotifierSaved.ignored_events = addon.ignored_events
     end
@@ -188,7 +189,7 @@ function addon:DoSearch()
     search_again_at = nil
     addon.interrupted = nil
 
-    if (PremadeNotifierSaved and PremadeNotifierSaved.forever and IsInGroup())
+    if (PremadeNotifierSaved.forever and IsInGroup())
        or
        (SearchPanel:IsVisible() and (
             SearchPanel.categoryID ~= self.categoryID or

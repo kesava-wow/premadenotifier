@@ -346,7 +346,6 @@ function addon:UI_OpenLFGListToResults(ids)
     -- doesn't scroll down to selection
 
     if not AutoSignUp_Enabled or
-       not PremadeNotifierSaved or
        not PremadeNotifierSaved.forever
     then
         -- open frame to panel which was active at time of search
@@ -377,7 +376,7 @@ function addon:UI_OpenLFGListToResults(ids)
         end
     end
 
-    if PremadeNotifierSaved and not PremadeNotifierSaved.forever then
+    if not PremadeNotifierSaved.forever then
         -- clear saved search
         wipe(PremadeNotifierSaved)
     end
