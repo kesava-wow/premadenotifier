@@ -1,4 +1,4 @@
-## Interface: 70100
+## Interface: 70200
 ## Author: Kesava
 ## Title: Premade|cff9966ffNotifier|r
 ## Notes: It notifies you. About premades.
